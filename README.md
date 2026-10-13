@@ -2,7 +2,7 @@
 
 Um único arquivo (`index.html`) com duas telas:
 
-- **Painel de controle** (`index.html` ou `index.html#control`), com duas telas: **Controle** (prévia, play/pause, modo de rolagem, velocidade ou voz, progresso) e **Roteiro** (editor Markdown com prévia de como o texto aparece). A engrenagem **⚙** abre os ajustes de texto, voz, pedal e teclas ao lado da prévia, que muda na hora.
+- **Painel de controle** (`index.html` ou `index.html#control`), com duas telas: **Controle** (monitor com o espelho do prompter, play/pause, modo de rolagem, velocidade ou voz, progresso) e **Roteiro** (editor Markdown com prévia de como o texto aparece). A engrenagem **⚙** abre os ajustes de texto, câmera, voz, pedal e teclas ao lado do monitor, que muda na hora.
 - **Prompter** (`index.html#prompter`): a tela que vai para o Elgato Prompter, só com o texto.
 
 As duas telas conversam pelo próprio navegador (BroadcastChannel, com localStorage de reserva), então não precisa de servidor nem de internet para o básico. Tudo que você ajusta fica salvo no navegador.
@@ -22,11 +22,17 @@ O botão **Ver aqui** mostra o prompter na mesma janela; no prompter, passe o mo
 
 ## Roteiro em Markdown
 
+O botão **Exemplo** carrega um roteiro curto no estilo dos vídeos do AWS Developers LATAM (um agente com Strands Agents), com marcações de câmera, tela e corte entre colchetes.
+
 - `# Título` vira um título de seção (os botões ◀ ▶ e as setas ← → pulam de bloco em bloco; `Shift + ←/→` pula de título em título).
 - `[texto entre colchetes]` é uma deixa: aparece em destaque, pode ser escondida e **não entra** no reconhecimento de voz.
 - `---` marca uma pausa (três pontos no texto).
 - `**negrito**`, `*itálico*`, listas e citações (`>`) funcionam. Quebras de linha simples são mantidas.
 - `<!-- comentário -->` não aparece no prompter.
+
+## Marcador da câmera
+
+Em **⚙ → Câmera**, ligue o marcador para mostrar onde está a lente atrás do vidro. Dá para escolher o estilo (mira, anel ou ponto), tamanho e cor, e posicionar arrastando a mira na prévia do painel ou no próprio prompter. O botão **Linha de leitura na altura da câmera** coloca a linha de leitura na mesma altura, para os olhos ficarem na lente enquanto você lê. Desligue o marcador quando não precisar dele.
 
 ## Seguir a voz
 
@@ -39,7 +45,7 @@ Escolha **Seguir minha voz** e dê play. O navegador pede acesso ao microfone na
 - **Confiança para pular longe** deixa os pulos grandes mais exigentes ou mais soltos.
 - **Continuar rolando devagar se perder a voz** usa a velocidade da rolagem automática enquanto não reconhece nada.
 
-O reconhecimento usa a Web Speech API, que funciona bem no Chrome e no Edge (o Chrome normalmente precisa de internet para reconhecer). Firefox e Safari têm suporte limitado. O microfone pode ficar na janela do controle (padrão) ou na do prompter.
+O reconhecimento usa a Web Speech API, que funciona bem no Chrome e no Edge (o Chrome normalmente precisa de internet para reconhecer). Firefox e Safari têm suporte limitado. Com as duas janelas abertas, “Microfone na janela” (⚙ → *Voz*) escolhe quem escuta: a do controle (padrão) ou a do prompter. Se a janela escolhida não estiver aberta (tela única, por exemplo), a que estiver aberta assume o microfone sozinha.
 
 ## Stream Deck Pedal
 
@@ -47,7 +53,7 @@ Dois jeitos:
 
 **1. Por teclas (recomendado).** No app Stream Deck, coloque em cada pedal uma ação de tecla de atalho (Hotkey) com as teclas que aparecem em ⚙ → *Pedal*. Padrão: esquerdo `←` (bloco anterior), central `Espaço` (play/pause), direito `→` (próximo bloco). Você pode trocar a ação de cada pedal e gravar outras teclas; `F13`, `F14` e `F15` são boas opções porque não atrapalham a digitação. A tecla vai para a janela que estiver em foco (painel ou prompter), então deixe uma delas em primeiro plano e o cursor fora do editor (`Esc` tira o foco do editor).
 
-**2. Por USB (WebHID, experimental).** Em ⚙ → *Pedal*, clique em **Conectar pedal por USB** e escolha o Stream Deck Pedal. Assim o pedal fala direto com a página, sem depender de foco. Se não chegar nada, feche o app Stream Deck e tente de novo. Use **Calibrar pedais** para ensinar qual pedal é qual (o sistema mostra os bytes do relatório HID para você conferir).
+**2. Por USB (WebHID, experimental).** Em ⚙ → *Pedal*, clique em **Conectar pedal por USB** e escolha o Stream Deck Pedal. Assim o pedal fala direto com a página, sem depender de foco, e segurar o pedal repete a ação (bloco anterior ou próximo, velocidade, fonte), como uma tecla segurada: dá para ir até o início ou o fim sem soltar. Play/pause e os outros comandos de liga/desliga não repetem. Quem responde ao pedal é o painel de controle; com o prompter sozinho na janela (“Ver aqui”), ele assume o pedal, e devolve quando o painel abre de novo. Se não chegar nada, feche o app Stream Deck e tente de novo. Use **Calibrar pedais** para ensinar qual pedal é qual (o sistema mostra os bytes do relatório HID para você conferir).
 
 ## Atalhos
 

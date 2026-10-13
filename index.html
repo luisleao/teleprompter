@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Teleprompter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<style>
+:root {
+  --bg: #111318; --surface: #171a20; --raised: #1f232b; --raised2: #272c36; --sunk: #0c0d11;
+  --edge: #2a2f39; --edge2: #3a414e;
+  --ink: #ece8dd; --ink2: #c3c6cd; --mute: #868c98; --faint: #5b6170;
+  --amber: #f2a93b; --amber-ink: #1c1203; --rec: #ff4f4f; --cue: #6ec6ff; --ok: #5fd38f; --warn: #ff6b6b;
+  --r-lg: 18px; --r: 12px; --r-sm: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI Variable", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --accent: var(--amber);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--amber); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: 12px; background: var(--sunk); border: 1px solid var(--edge); border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+.muted { color: var(--mute); }
+.small { font-size: 12px; }
+.spacer { flex: 1; }
+.row { display: flex; align-items: center; gap: 8px; }
+.row.wrap { flex-wrap: wrap; }
+.hint { margin: 0; color: var(--faint); font-size: 12px; line-height: 1.5; }
+.hint code { color: var(--mute); }
+h2.label { margin: 0; font-size: 13px; font-weight: 600; color: var(--ink2); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- cabeçalho ---------- */
+#control { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.topbar { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--edge); background: var(--surface); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 15px; letter-spacing: -.01em; margin-right: 4px; }
+.brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 12px rgba(242,169,59,.6); }
+.brand .dot.live { background: var(--rec); box-shadow: 0 0 14px var(--rec); animation: pulse 1.2s infinite; }
+.screens { display: flex; gap: 2px; background: var(--sunk); padding: 3px; border-radius: 10px; border: 1px solid var(--edge); }
+.screens .scr { padding: 6px 16px; border-radius: 7px; border: 0; background: transparent; color: var(--mute); font-weight: 600; font-size: 13px; }
+.screens .scr.active { background: var(--raised2); color: var(--ink); }
+.lamps { display: flex; gap: 16px; }
+.lamp { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--mute); white-space: nowrap; }
+.lamp i { width: 8px; height: 8px; border-radius: 50%; background: #3a3f4a; box-shadow: inset 0 0 0 1px rgba(0,0,0,.5); flex: none; }
+.lamp.on { color: var(--ink2); }
+.lamp.on i { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.lamp.busy i { background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: pulse 1s infinite; }
+.lamp.bad i { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.focus-warning { display: none; font-size: 12px; color: var(--amber); }
+body.editing .focus-warning { display: block; }
+
+/* ---------- botões e campos ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--edge); background: linear-gradient(180deg, var(--raised2), var(--raised)); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); transition: background .12s, border-color .12s, transform .05s; white-space: nowrap; user-select: none; }
+.btn:hover { border-color: var(--edge2); }
+.btn:active { transform: translateY(1px); box-shadow: none; }
+.btn.primary { background: linear-gradient(180deg, #ffbd57, var(--amber)); color: var(--amber-ink); border-color: #c98522; font-weight: 700; }
+.btn.quiet { background: transparent; border-color: transparent; color: var(--ink2); box-shadow: none; }
+.btn.quiet:hover { background: var(--raised); border-color: var(--edge); }
+.btn.small { padding: 5px 10px; font-size: 12.5px; border-radius: 8px; }
+.btn.icon-sm { width: 36px; height: 36px; padding: 0; border-radius: 10px; font-size: 17px; }
+.btn.danger { color: var(--warn); }
+.btn:disabled { opacity: .45; cursor: default; }
+label.btn input[type=file] { display: none; }
+
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; margin: 0; cursor: pointer; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--amber) var(--fill, 0%), var(--edge2) var(--fill, 0%)); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%; background: #f7f3ea; border: 2px solid var(--amber); box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--edge2); }
+input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--amber); }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #f7f3ea; border: 2px solid var(--amber); }
+input[type=color] { width: 38px; height: 26px; border: 1px solid var(--edge); border-radius: 6px; background: transparent; padding: 0 2px; cursor: pointer; }
+input[type=checkbox] { accent-color: var(--amber); width: 16px; height: 16px; margin: 0; }
+select, input[type=text], input[type=number] { background: var(--sunk); border: 1px solid var(--edge); border-radius: 8px; padding: 6px 9px; outline: none; max-width: 100%; }
+select:focus, input[type=text]:focus, input[type=number]:focus { border-color: var(--edge2); }
+
+.field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; padding: 8px 0; border-bottom: 1px solid var(--edge); }
+.field:last-child { border-bottom: 0; }
+.field > label { color: var(--ink2); font-size: 13px; }
+.field .val { font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--mute); min-width: 4ch; text-align: right; }
+.field.range input[type=range] { grid-column: 1 / -1; }
+.field.check > label { cursor: pointer; }
+.field.action { grid-template-columns: 1fr; }
+.group-title { font-size: 12px; color: var(--mute); margin: 14px 0 2px; }
+.group-title:first-child { margin-top: 0; }
+
+.tabs { display: flex; gap: 2px; background: var(--sunk); padding: 3px; border-radius: 10px; border: 1px solid var(--edge); }
+.tab { flex: 1; padding: 7px 4px; border-radius: 7px; text-align: center; font-size: 12.5px; color: var(--mute); border: 0; background: transparent; }
+.tab.active { background: var(--raised2); color: var(--ink); }
+.tabpane { display: flex; flex-direction: column; gap: 10px; }
+
+.kbd { display: inline-block; font: 11px/1 var(--mono); padding: 4px 6px; border: 1px solid var(--edge2); border-bottom-width: 2px; border-radius: 5px; background: var(--sunk); color: var(--ink); min-width: 22px; text-align: center; }
+table.keys { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.keys td { padding: 6px 4px; border-bottom: 1px solid var(--edge); vertical-align: middle; }
+table.keys td:first-child { white-space: nowrap; width: 1%; }
+table.keys td:last-child { color: var(--ink2); }
+
+/* ---------- telas ---------- */
+.screen { min-height: 0; overflow: auto; transition: padding-right .2s; container-type: inline-size; }
+#control.drawer-open .screen { padding-right: min(400px, 100vw); }
+@media (max-width: 900px) { #control.drawer-open .screen { padding-right: 0; } }
+
+/* tela de controle: monitor + mesa */
+.run-wrap { display: grid; grid-template-columns: minmax(0, 1fr) clamp(250px, 23vw, 290px); gap: 20px; align-items: start; max-width: 1400px; margin: 0 auto; padding: 20px 22px 30px; }
+@container (max-width: 700px) { .run-wrap { grid-template-columns: 1fr; } .deck { max-width: 520px; margin: 0 auto; width: 100%; } }
+
+.monitor { background: var(--sunk); border-radius: var(--r-lg); padding: 10px 10px 8px; box-shadow: 0 0 0 1px var(--edge), inset 0 1px 0 rgba(255,255,255,.04), 0 40px 70px -40px rgba(0,0,0,.9); }
+.monitor-bar { display: flex; align-items: center; gap: 10px; padding: 2px 6px 10px; font-size: 12.5px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.monitor-bar .what { color: var(--ink2); }
+.tally { width: 9px; height: 9px; border-radius: 50%; background: #343946; box-shadow: inset 0 0 0 1px rgba(0,0,0,.5); flex: none; }
+.tally.on { background: var(--rec); box-shadow: 0 0 10px var(--rec), 0 0 2px var(--rec); }
+.glass { border-radius: 10px; overflow: hidden; background: #000; }
+.stage.preview { aspect-ratio: 16 / 9.4; width: 100%; }
+.monitor-foot { padding: 10px 6px 2px; display: flex; flex-direction: column; gap: 2px; }
+.monitor-foot .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); font-variant-numeric: tabular-nums; }
+
+.deck { display: flex; flex-direction: column; gap: 20px; padding-top: 2px; min-width: 0; }
+.mode { display: flex; flex-direction: column; gap: 6px; }
+.mode button { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: var(--r); border: 1px solid var(--edge); background: var(--surface); color: var(--mute); text-align: left; font-weight: 600; font-size: 13.5px; }
+.mode button i { width: 10px; height: 10px; border-radius: 50%; background: #343946; box-shadow: inset 0 0 0 1px rgba(0,0,0,.5); flex: none; }
+.mode button.active { background: var(--raised); border-color: var(--edge2); color: var(--ink); }
+.mode button.active i { background: var(--amber); box-shadow: 0 0 8px rgba(242,169,59,.7); }
+.mode button small { display: block; font-weight: 400; color: var(--faint); font-size: 12px; }
+
+.transport { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.tbtn { width: 42px; height: 42px; flex: none; border-radius: 50%; border: 1px solid var(--edge); background: linear-gradient(180deg, var(--raised2), var(--raised)); color: var(--ink2); font-size: 15px; display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 4px rgba(0,0,0,.4); }
+.tbtn:hover { color: var(--ink); border-color: var(--edge2); }
+.tbtn:active { transform: translateY(1px); box-shadow: none; }
+.tbtn.play { width: 66px; height: 66px; font-size: 26px; color: var(--amber-ink); background: radial-gradient(circle at 50% 30%, #ffc96a, var(--amber) 70%); border-color: #c98522; box-shadow: 0 0 0 6px rgba(242,169,59,.12), 0 6px 14px rgba(0,0,0,.5); }
+.tbtn.play.on { box-shadow: 0 0 0 6px rgba(255,79,79,.18), 0 0 24px rgba(242,169,59,.45), 0 6px 14px rgba(0,0,0,.5); }
+
+.speed-block { display: flex; flex-direction: column; gap: 6px; }
+.speed-block .head { display: flex; align-items: baseline; justify-content: space-between; }
+.speed-block .head .lbl { font-size: 13px; color: var(--ink2); }
+.readout { font-size: 30px; font-weight: 300; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1; }
+.readout small { font-size: 12px; color: var(--mute); letter-spacing: 0; margin-left: 4px; font-weight: 400; }
+.speed-block .ctl { display: flex; align-items: center; gap: 8px; }
+.speed-block .ctl .btn { width: 32px; padding: 0; height: 28px; }
+
+.voice-panel { display: flex; flex-direction: column; gap: 8px; }
+.voice-panel .head { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink2); }
+.voice-status { font-size: 12.5px; color: var(--mute); }
+.voice-status.ok { color: var(--ok); }
+.voice-status.busy { color: var(--amber); }
+.voice-status.bad { color: var(--warn); }
+.transcript { min-height: 72px; max-height: 160px; overflow: auto; padding: 10px 12px; background: var(--sunk); border-radius: var(--r); border: 1px solid var(--edge); font-size: 13px; color: var(--faint); line-height: 1.55; }
+.transcript .final { color: var(--ink2); }
+.transcript .interim { color: var(--mute); font-style: italic; }
+.keys-hint { color: var(--faint); font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; }
+.keys-hint span.k { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+#control.mode-auto .only-voice { display: none !important; }
+#control.mode-voice .only-auto:not(.only-hybrid) { display: none !important; }
+#control.mode-voice:not(.hybrid) .only-hybrid { display: none !important; }
+
+/* tela do roteiro */
+.edit-wrap { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; padding: 22px 24px; max-width: 1400px; margin: 0 auto; }
+.edit-wrap > section { min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 900px) { .edit-wrap { grid-template-columns: 1fr; height: auto; } .edit-wrap .rendered-col { min-height: 320px; } }
+.edit-wrap .toolbar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.edit-wrap .toolbar .stats { margin-left: auto; font-size: 12.5px; color: var(--mute); font-variant-numeric: tabular-nums; }
+textarea.editor { flex: 1; min-height: 260px; resize: none; background: var(--sunk); border: 1px solid var(--edge); border-radius: var(--r); padding: 16px 18px; font: 14px/1.65 var(--mono); color: #d9d6cc; outline: none; tab-size: 2; }
+textarea.editor:focus { border-color: var(--amber); }
+.dropzone.over textarea.editor { border-color: var(--cue); box-shadow: 0 0 0 3px rgba(110,198,255,.25); }
+.rendered-col .monitor { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.rendered-col .glass { flex: 1; min-height: 0; }
+.stage.static { height: 100%; min-height: 240px; }
+.stage.static .viewport { overflow: auto; padding: 4% 0; }
+.stage.static .content { transform: none !important; }
+.stage.static .rline, .stage.static .hud, .stage.static .blankout, .stage.static .cam { display: none; }
+
+/* ---------- gaveta de ajustes ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 20; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 100vw); background: var(--surface); border-left: 1px solid var(--edge); z-index: 21; display: flex; flex-direction: column; box-shadow: -20px 0 50px rgba(0,0,0,.45); }
+.drawer-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--edge); }
+.drawer-head h2 { margin: 0; font-size: 14px; font-weight: 650; }
+.drawer-body { padding: 14px 16px 28px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.pedal-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--edge); }
+.pedal-row .name { font-size: 12.5px; color: var(--ink2); white-space: nowrap; }
+.pedal-row .key.recording { border-color: var(--amber); color: var(--amber); animation: pulse 1s infinite; }
+.hid-bytes { font: 11px var(--mono); color: var(--faint); word-break: break-all; }
+
+/* ---------- palco (prompter e prévia compartilham) ---------- */
+.stage { position: relative; overflow: hidden; background: var(--p-bg, #000); color: var(--p-text, #fff);
+  --p-size: 56px; --p-lh: 1.35; --p-weight: 500; --p-font: var(--font); --p-width: 90%; --p-align: left; --p-rl: 35%;
+  --p-accent: #ffb347; --p-cue: #6ec6ff; --p-hl: rgba(255,179,71,.28); }
+.stage .flip { position: absolute; inset: 0; }
+.stage.mirror-h .flip { transform: scaleX(-1); }
+.stage.mirror-v .flip { transform: scaleY(-1); }
+.stage.mirror-h.mirror-v .flip { transform: scale(-1, -1); }
+.stage .viewport { position: absolute; inset: 0; overflow: hidden; }
+.stage.fade .viewport {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.18) 0%, #000 calc(var(--p-rl) - 14%), #000 calc(var(--p-rl) + 14%), rgba(0,0,0,.18) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.18) 0%, #000 calc(var(--p-rl) - 14%), #000 calc(var(--p-rl) + 14%), rgba(0,0,0,.18) 100%);
+}
+.stage .content { position: relative; width: var(--p-width); margin: 0 auto; text-align: var(--p-align);
+  font-size: var(--p-size); line-height: var(--p-lh); font-weight: var(--p-weight); font-family: var(--p-font);
+  will-change: transform; overflow-wrap: break-word; }
+.stage .content > :first-child { margin-top: 0; }
+.stage .content p, .stage .content li, .stage .content blockquote, .stage .content pre { margin: 0 0 .55em; }
+.stage .content ul, .stage .content ol { margin: 0 0 .55em; padding-left: 1.1em; }
+.stage .content h1, .stage .content h2, .stage .content h3, .stage .content h4, .stage .content h5, .stage .content h6 {
+  color: var(--p-accent); font-size: .62em; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; margin: 1.2em 0 .5em; opacity: .95; }
+.stage .content h1 { font-size: .72em; }
+.stage .content hr { border: 0; height: auto; margin: .6em 0 .9em; text-align: center; }
+.stage .content hr::after { content: "• • •"; color: var(--p-accent); opacity: .55; font-size: .5em; letter-spacing: .6em; }
+.stage .content strong { font-weight: 800; }
+.stage .content em { font-style: italic; }
+.stage .content s { opacity: .45; }
+.stage .content code { font-family: var(--mono); font-size: .8em; background: rgba(255,255,255,.08); border: 0; padding: 0 .2em; border-radius: .15em; color: inherit; }
+.stage .content pre { font-family: var(--mono); font-size: .55em; line-height: 1.4; white-space: pre-wrap; opacity: .75; border-left: .25em solid var(--p-cue); padding-left: .8em; }
+.stage .content blockquote { border-left: .18em solid var(--p-cue); padding-left: .6em; opacity: .9; }
+.stage .content .cue { color: var(--p-cue); font-size: .5em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; display: inline-block;
+  padding: .15em .6em; border: .12em solid currentColor; border-radius: .4em; vertical-align: middle; line-height: 1.3; opacity: .9; }
+.stage.nocues .content .cue { display: none; }
+.stage.noheads .content h1, .stage.noheads .content h2, .stage.noheads .content h3, .stage.noheads .content h4, .stage.noheads .content h5, .stage.noheads .content h6 { display: none; }
+.stage .content .w.current { background: var(--p-hl); border-radius: .15em; box-shadow: 0 0 0 .1em var(--p-hl); }
+.stage .content .empty { color: rgba(255,255,255,.35); font-size: .6em; text-align: center; padding-top: 1em; }
+
+.stage .rline { position: absolute; left: 0; right: 0; top: var(--p-rl); height: 2px; margin-top: -1px; background: var(--p-accent); opacity: .5; pointer-events: none; }
+.stage .rline::before, .stage .rline::after { content: ""; position: absolute; top: -7px; border: 8px solid transparent; }
+.stage .rline::before { left: 0; border-left-color: var(--p-accent); }
+.stage .rline::after { right: 0; border-right-color: var(--p-accent); }
+.stage.noline .rline { display: none; }
+
+.stage .blankout { position: absolute; inset: 0; background: var(--p-bg, #000); opacity: 0; pointer-events: none; transition: opacity .25s; }
+.stage.blank .blankout { opacity: 1; }
+
+.stage .hud { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; gap: 8px; align-items: center; opacity: 0; transition: opacity .35s; pointer-events: none; font: 600 14px/1 var(--font); }
+.stage.hud-on .hud { opacity: 1; }
+.stage.preview .hud { display: none; }
+.stage .hud .chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.18); color: #fff; padding: 7px 12px; border-radius: 999px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.stage .hud .chip.ok { border-color: rgba(91,217,138,.8); }
+.stage .hud .chip.busy { border-color: rgba(255,179,71,.9); }
+.stage .hud .chip.bad { border-color: rgba(255,107,107,.9); }
+.stage .hud .chip.link { pointer-events: auto; cursor: pointer; text-decoration: none; }
+.stage .hud .chip.link:hover { background: rgba(255,255,255,.15); }
+.stage .hud .chip.hint { color: rgba(255,255,255,.65); font-weight: 500; }
+
+/* marcador da posição da câmera (mira arrastável) */
+.stage .cam { position: absolute; left: var(--p-cx, 50%); top: var(--p-cy, 22%); width: var(--p-cs, 56px); height: var(--p-cs, 56px); transform: translate(-50%, -50%); border-radius: 50%;
+  border: 2px solid var(--p-cam, #ff5a5a); opacity: .9; display: none; cursor: grab; touch-action: none; box-shadow: 0 0 0 1px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,0,0,.55); }
+.stage.cam-on .cam { display: block; }
+.stage .cam:active { cursor: grabbing; }
+.stage .cam i { position: absolute; left: 50%; top: 50%; width: 16%; height: 16%; min-width: 4px; min-height: 4px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--p-cam, #ff5a5a); }
+.stage .cam::before, .stage .cam::after { content: ""; position: absolute; background: var(--p-cam, #ff5a5a); }
+.stage .cam::before { left: 50%; top: -24%; width: 2px; height: 148%; transform: translateX(-50%); -webkit-mask: linear-gradient(#000 0 17%, transparent 17% 83%, #000 83%); mask: linear-gradient(#000 0 17%, transparent 17% 83%, #000 83%); }
+.stage .cam::after { top: 50%; left: -24%; height: 2px; width: 148%; transform: translateY(-50%); -webkit-mask: linear-gradient(90deg, #000 0 17%, transparent 17% 83%, #000 83%); mask: linear-gradient(90deg, #000 0 17%, transparent 17% 83%, #000 83%); }
+.stage.cam-anel .cam::before, .stage.cam-anel .cam::after, .stage.cam-anel .cam i { display: none; }
+.stage.cam-ponto .cam { border-color: transparent; box-shadow: none; }
+.stage.cam-ponto .cam::before, .stage.cam-ponto .cam::after { display: none; }
+.stage.cam-ponto .cam i { width: 36%; height: 36%; box-shadow: 0 0 0 2px rgba(0,0,0,.55); }
+
+/* ---------- tela do prompter ---------- */
+#prompter { position: fixed; inset: 0; background: #000; }
+#prompter.nocursor { cursor: none; }
+#prompter .stage { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+
+<template id="stageTpl">
+  <div class="flip">
+    <div class="viewport"><div class="content"></div></div>
+    <div class="rline"></div>
+    <div class="cam" title="Arraste para posicionar a câmera"><i></i></div>
+    <div class="blankout"></div>
+    <div class="hud">
+      <span class="chip play">▶ 40</span>
+      <span class="chip voice" hidden>🎤</span>
+      <span class="chip pedal" hidden>pedal USB</span>
+      <span class="chip ctrl" hidden>sem painel de controle</span>
+      <span class="spacer"></span>
+      <span class="chip hint">F tela cheia · Espaço play · ← → blocos</span>
+      <a class="chip link" href="#control">← painel</a>
+    </div>
+  </div>
+</template>
+
+<!-- ============ PAINEL DE CONTROLE ============ -->
+<div id="control" class="mode-auto" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="dot" id="brandDot"></span> Teleprompter</div>
+    <nav class="screens" id="screens">
+      <button class="scr active" data-screen="run">Controle</button>
+      <button class="scr" data-screen="edit">Roteiro</button>
+    </nav>
+    <span class="spacer"></span>
+    <span class="focus-warning">Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal</span>
+    <div class="lamps">
+      <span class="lamp" id="lampPrompter"><i></i><span class="t">prompter fechado</span></span>
+      <span class="lamp" id="lampVoice"><i></i><span class="t">voz desligada</span></span>
+      <span class="lamp" id="lampPedal"><i></i><span class="t">pedal por teclado</span></span>
+    </div>
+    <button class="btn icon-sm" id="btnSettings" title="Ajustes de texto, câmera, voz, pedal e teclas">⚙</button>
+    <button class="btn" id="btnPrompterHere" title="Mostra o prompter nesta mesma janela (tela única)">Ver aqui</button>
+    <button class="btn primary" id="btnOpenPrompter" title="Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)">Abrir prompter ↗</button>
+  </header>
+
+  <!-- tela: controle -->
+  <main class="screen" id="screenRun">
+    <div class="run-wrap">
+      <div class="monitor">
+        <div class="monitor-bar">
+          <span class="tally" id="tally"></span>
+          <span class="what" id="monitorWhat">Parado</span>
+          <span class="spacer"></span>
+          <span id="monitorRight">prompter fechado</span>
+        </div>
+        <div class="glass"><div class="stage preview" id="previewStage"></div></div>
+        <div class="monitor-foot">
+          <input type="range" id="progress" min="0" max="1000" step="1" value="0" title="Arraste para pular">
+          <div class="meta"><span id="progressText">—</span><span id="progressRight"></span></div>
+        </div>
+      </div>
+
+      <aside class="deck">
+        <div class="mode" id="modeSeg">
+          <button data-mode="auto"><i></i><span>Rolagem automática<small>velocidade fixa, você controla o ritmo</small></span></button>
+          <button data-mode="voice"><i></i><span>Seguir minha voz<small>o texto acompanha o que você fala</small></span></button>
+        </div>
+
+        <div class="transport">
+          <button class="tbtn" data-cmd="top" title="Voltar ao início (Home)">⏮</button>
+          <button class="tbtn" data-cmd="prevBlock" title="Bloco anterior (←)">◀</button>
+          <button class="tbtn play" id="btnToggle" title="Play / Pause (Espaço)">▶</button>
+          <button class="tbtn" data-cmd="nextBlock" title="Próximo bloco (→)">▶</button>
+          <button class="tbtn" data-cmd="bottom" title="Ir para o fim (End)">⏭</button>
+        </div>
+
+        <div class="speed-block only-auto only-hybrid">
+          <div class="head"><span class="lbl" id="speedLabel">Velocidade</span><span class="readout" id="speedVal">40<small>px/s</small></span></div>
+          <div class="ctl">
+            <button class="btn small" data-act="speedDown" title="Mais devagar (↓)">−</button>
+            <input type="range" id="speed" min="0" max="150" step="1">
+            <button class="btn small" data-act="speedUp" title="Mais rápido (↑)">+</button>
+          </div>
+        </div>
+
+        <div class="voice-panel only-voice" id="voiceBox">
+          <div class="head"><span>Voz</span><span class="spacer"></span><span class="voice-status" id="voiceStatus">desligada</span></div>
+          <div class="transcript" id="transcript">Dê play para começar a ouvir.</div>
+          <p class="hint" id="voiceHint"></p>
+        </div>
+
+        <p class="keys-hint"><span class="k"><span class="kbd">Espaço</span> play/pause</span><span class="k"><span class="kbd">←</span><span class="kbd">→</span> blocos</span><span class="k"><span class="kbd">↑</span><span class="kbd">↓</span> velocidade</span><span class="k"><span class="kbd">B</span> esconder</span><span class="k"><span class="kbd">R</span> reiniciar</span></p>
+      </aside>
+    </div>
+  </main>
+
+  <!-- tela: roteiro -->
+  <main class="screen" id="screenEdit" hidden>
+    <div class="edit-wrap">
+      <section class="editor-col dropzone" id="dropzone">
+        <div class="toolbar">
+          <label class="btn quiet small">Abrir .md <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown,text/plain"></label>
+          <button class="btn quiet small" id="btnSample">Exemplo</button>
+          <button class="btn quiet small" id="btnDownload">Salvar .md</button>
+          <button class="btn quiet small danger" id="btnClear">Limpar</button>
+          <span class="stats" id="scriptStats"></span>
+        </div>
+        <textarea class="editor" id="editor" spellcheck="false" placeholder="Cole, digite ou arraste um arquivo .md aqui…"></textarea>
+        <p class="hint"><code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto</p>
+      </section>
+      <section class="rendered-col">
+        <div class="monitor"><div class="glass"><div class="stage static" id="editPreview"></div></div></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- gaveta de ajustes -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" hidden>
+    <div class="drawer-head">
+      <h2>Ajustes</h2>
+      <span class="spacer"></span>
+      <button class="btn icon-sm quiet" id="btnCloseDrawer" title="Fechar (Esc)">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="tabs">
+        <button class="tab active" data-tab="text">Texto</button>
+        <button class="tab" data-tab="camera">Câmera</button>
+        <button class="tab" data-tab="voice">Voz</button>
+        <button class="tab" data-tab="pedal">Pedal</button>
+        <button class="tab" data-tab="keys">Teclas</button>
+      </div>
+
+      <div class="tabpane" data-pane="text" id="paneText"></div>
+
+      <div class="tabpane" data-pane="camera" id="paneCamera" hidden>
+        <div id="cameraFields"></div>
+        <div class="row wrap">
+          <button class="btn small" id="btnCamAlign">Linha de leitura na altura da câmera</button>
+        </div>
+        <p class="hint">O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.</p>
+      </div>
+
+      <div class="tabpane" data-pane="voice" id="paneVoice" hidden>
+        <div id="voiceFields"></div>
+        <p class="hint">Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.</p>
+        <p class="hint">O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.</p>
+      </div>
+
+      <div class="tabpane" data-pane="pedal" id="panePedal" hidden>
+        <p class="hint">No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.</p>
+        <div id="pedalRows"></div>
+        <div class="row wrap" style="margin-top:6px">
+          <button class="btn small" id="btnHid">Conectar pedal por USB</button>
+          <button class="btn small" id="btnHidCal" hidden>Calibrar pedais</button>
+          <span class="muted small" id="hidStatus">WebHID · Chrome/Edge</span>
+        </div>
+        <div class="hid-bytes" id="hidBytes"></div>
+        <p class="hint">Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.</p>
+      </div>
+
+      <div class="tabpane" data-pane="keys" id="paneKeys" hidden>
+        <table class="keys" id="keysTable"></table>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============ PROMPTER ============ -->
+<div id="prompter" hidden>
+  <div class="stage" id="prompterStage"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================================================================
+   utilidades
+   ================================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtTime = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); };
+const hexToRgba = (hex, a) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return `rgba(255,179,71,${a})`; const n = parseInt(m[1], 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const normWord = w => w.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const tokenize = s => (s || '').split(/\s+/).map(normWord).filter(Boolean);
+
+const ROLE = (location.hash.replace('#', '') === 'prompter') ? 'prompter' : 'control';
+
+/* ================================================================
+   markdown mínimo -> HTML (sem dependências)
+   ================================================================ */
+function inline(s) {
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<em>$2</em>');
+  s = s.replace(/(^|[^_\w])_([^_\n]+)_(?!\w)/g, '$1<em>$2</em>');
+  s = s.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+  s = s.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');            // imagens somem
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1');          // links viram texto
+  s = s.replace(/\[([^\]\n]+)\]/g, '<span class="cue">$1</span>'); // [deixa]
+  return s;
+}
+function renderMarkdown(src) {
+  src = (src || '').replace(/\r\n?/g, '\n').replace(/<!--[\s\S]*?-->/g, '');
+  const lines = src.split('\n');
+  const out = []; const para = []; let i = 0, m;
+  const flush = () => { if (para.length) { out.push('<p>' + para.map(inline).join('<br>') + '</p>'); para.length = 0; } };
+  const LIST = /^\s*([-*+]|\d+[.)])\s+(.*)$/;
+  const QUOTE = /^\s*>\s?(.*)$/;
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) { flush(); const buf = []; i++; while (i < lines.length && !/^\s*```/.test(lines[i])) buf.push(esc(lines[i++])); i++; out.push('<pre>' + buf.join('\n') + '</pre>'); continue; }
+    if (/^\s*$/.test(raw)) { flush(); i++; continue; }
+    if ((m = /^\s*(#{1,6})\s+(.*)$/.exec(raw))) { flush(); const l = m[1].length; out.push(`<h${l}>${inline(esc(m[2].replace(/\s+#+\s*$/, '')))}</h${l}>`); i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(raw)) { flush(); out.push('<hr>'); i++; continue; }
+    if (QUOTE.test(raw)) { flush(); const buf = []; while (i < lines.length && (m = QUOTE.exec(lines[i]))) { buf.push(inline(esc(m[1]))); i++; } out.push('<blockquote><p>' + buf.join('<br>') + '</p></blockquote>'); continue; }
+    if ((m = LIST.exec(raw))) { flush(); const tag = /\d/.test(m[1]) ? 'ol' : 'ul'; const items = []; while (i < lines.length && (m = LIST.exec(lines[i]))) { items.push('<li>' + inline(esc(m[2])) + '</li>'); i++; } out.push(`<${tag}>${items.join('')}</${tag}>`); continue; }
+    para.push(esc(raw)); i++;
+  }
+  flush();
+  return out.join('\n');
+}
+
+/* envolve cada palavra em <span class="w" data-i> e devolve índice de palavras e blocos */
+function indexWords(container) {
+  const words = []; const blocks = [];
+  const SKIP = /^(PRE|CODE|H[1-6])$/; // código e títulos de seção não são fala
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, { acceptNode(n) {
+    let p = n.parentElement;
+    while (p && p !== container) { if (p.classList.contains('cue') || SKIP.test(p.tagName)) return NodeFilter.FILTER_REJECT; p = p.parentElement; }
+    return /\S/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+  } });
+  const nodes = []; let n; while ((n = walker.nextNode())) nodes.push(n);
+  for (const node of nodes) {
+    const frag = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); continue; }
+      const span = document.createElement('span'); span.className = 'w'; span.textContent = part;
+      const norm = normWord(part);
+      if (norm) { span.dataset.i = words.length; words.push({ el: span, norm }); }
+      frag.appendChild(span);
+    }
+    node.parentNode.replaceChild(frag, node);
+  }
+  // blocos de navegação: cada parágrafo/item; títulos e deixas sem fala apontam para a próxima palavra falada
+  const raw = [];
+  for (const el of container.children) {
+    if (el.tagName === 'UL' || el.tagName === 'OL') { for (const li of el.children) raw.push(mk(li)); }
+    else if (el.tagName !== 'HR') raw.push(mk(el));
+  }
+  function mk(el) { const first = el.querySelector('.w[data-i]'); return { el, start: first ? +first.dataset.i : null, heading: /^H[1-6]$/.test(el.tagName) }; }
+  let next = words.length - 1;
+  for (let i = raw.length - 1; i >= 0; i--) { if (raw[i].start == null) raw[i].start = next; else next = raw[i].start; }
+  for (const b of raw) {
+    const last = blocks[blocks.length - 1];
+    if (last && last.start === b.start) { last.heading = last.heading || b.heading; continue; }
+    if (words.length) blocks.push(b);
+  }
+  return { words, blocks };
+}
+
+/* ================================================================
+   bus: BroadcastChannel + localStorage (fallback), com dedupe
+   ================================================================ */
+const CHANNEL = 'teleprompter-v1';
+const bus = (() => {
+  const handlers = {}; const seen = []; const seenSet = new Set(); const myId = uid();
+  let bc = null; try { bc = new BroadcastChannel(CHANNEL); } catch (e) {}
+  function deliver(msg) {
+    if (!msg || msg.src === myId) return;
+    if (msg.id) { if (seenSet.has(msg.id)) return; seenSet.add(msg.id); seen.push(msg.id); if (seen.length > 300) seenSet.delete(seen.shift()); }
+    (handlers[msg.type] || []).forEach(h => { try { h(msg); } catch (e) { console.error(e); } });
+  }
+  if (bc) bc.onmessage = e => deliver(e.data);
+  window.addEventListener('storage', e => { if (e.key === CHANNEL + ':msg' && e.newValue) { try { deliver(JSON.parse(e.newValue)); } catch (err) {} } });
+  return {
+    id: myId,
+    send(msg) {
+      msg = Object.assign({}, msg, { id: uid(), src: myId });
+      if (bc) { try { bc.postMessage(msg); } catch (e) {} }
+      try { localStorage.setItem(CHANNEL + ':msg', JSON.stringify(msg)); } catch (e) {}
+    },
+    on(type, fn) { (handlers[type] = handlers[type] || []).push(fn); }
+  };
+})();
+
+/* ================================================================
+   estado compartilhado
+   ================================================================ */
+const SAMPLE = `# Abertura
+
+[CÂMERA · PLANO MÉDIO]
+
+Fala, pessoal! Hoje a gente vai montar um agente de IA que roda na AWS e responde perguntas sobre os nossos próprios dados. Em Python, com o Strands Agents, em menos de vinte linhas.
+
+Peraí, isso dá pra fazer? Dá. E a gente vai fazer junto, passo a passo.
+
+---
+
+# O que é o Strands
+
+[TELA: site do Strands Agents]
+
+O Strands Agents é um SDK open source para criar agentes. A ideia é simples: a gente descreve o que o agente faz, entrega as ferramentas e deixa o modelo decidir quando usar cada uma. O loop de raciocínio, quem cuida é o SDK.
+
+# Mão na massa
+
+[TELA: terminal]
+
+Para começar, crie um ambiente virtual com o comando \`python -m venv .venv\` e ative. Depois, instale o SDK com \`pip install strands-agents strands-agents-tools\`.
+
+[CORTE]
+
+[TELA: editor de código]
+
+Agora o agente. Importamos a classe **Agent**, criamos uma ferramenta com o decorador **tool** e passamos as duas coisas para o agente. Quando a gente pergunta qual foi o faturamento de setembro, ele percebe que precisa consultar os dados, chama a ferramenta e responde com o número.
+
+[TELA: terminal rodando o agente]
+
+Olha só: a pergunta entrou, a ferramenta foi chamada e a resposta veio com o valor certo.
+
+# Rodando na AWS
+
+[TELA: console do Amazon Bedrock]
+
+Por padrão, o Strands usa um modelo do Amazon Bedrock. Então basta ter as credenciais configuradas e o acesso ao modelo liberado na sua conta. Para publicar, a gente empacota o agente em uma função Lambda e expõe com uma URL.
+
+[CÂMERA · PLANO MÉDIO]
+
+# Encerramento
+
+É isso: agente criado, ferramenta ligada, rodando na nuvem. No próximo vídeo a gente coloca memória nesse agente, para ele lembrar das conversas.
+
+Ficou com dúvida? Deixa nos comentários. Até a próxima!
+
+[SORRIR · CORTE FINAL]
+`;
+
+const DEFAULTS = {
+  script: SAMPLE,
+  playing: false, speed: 40, mode: 'auto', blank: false, wordIndex: 0,
+  voiceLang: 'pt-BR', voiceSource: 'control', voiceLookahead: 2, voiceJump: 7, voiceHybrid: false,
+  fontSize: 56, lineHeight: 1.35, fontWeight: '500', fontFamily: 'sans', width: 90, align: 'left', readingLine: 35,
+  colorText: '#f3efe6', colorBg: '#000000', colorAccent: '#ffb347', colorCue: '#6ec6ff',
+  showReadingLine: true, fade: true, highlightWord: true, showCues: true, showHeadings: true, mirrorH: false, mirrorV: false,
+  camera: false, cameraStyle: 'mira', cameraX: 50, cameraY: 22, cameraSize: 56, cameraColor: '#ff5a5a',
+  pedal: { keys: ['ArrowLeft', 'Space', 'ArrowRight'], actions: ['prevBlock', 'toggle', 'nextBlock'] },
+  hid: { offsets: [3, 4, 5], auto: false }
+};
+const FONTS = { sans: 'var(--font)', serif: 'Georgia, "Times New Roman", serif', mono: 'var(--mono)', rounded: '"SF Pro Rounded", "Nunito", "Arial Rounded MT Bold", var(--font)' };
+const LS_KEY = 'teleprompter:state';
+
+let state = loadState();
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if (s && typeof s === 'object') return Object.assign({}, DEFAULTS, s, { playing: false, pedal: Object.assign({}, DEFAULTS.pedal, s.pedal || {}), hid: Object.assign({}, DEFAULTS.hid, s.hid || {}) });
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+const saveState = debounce(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({}, state, { playing: false }))); } catch (e) {} }, 300);
+
+const listeners = [];
+const onState = fn => listeners.push(fn);
+function patch(p, opts = {}) {
+  const changed = {};
+  for (const k in p) { if (JSON.stringify(state[k]) !== JSON.stringify(p[k])) { state[k] = p[k]; changed[k] = true; } }
+  const keys = Object.keys(changed);
+  if (!keys.length) return;
+  if (opts.broadcast !== false) { const out = {}; keys.forEach(k => out[k] = state[k]); bus.send({ type: 'patch', patch: out }); }
+  saveState();
+  listeners.forEach(fn => { try { fn(changed, state); } catch (e) { console.error(e); } });
+}
+bus.on('patch', m => patch(m.patch, { broadcast: false }));
+
+/* presença: quem está aberto? */
+const peers = {};
+bus.on('ping', m => { peers[m.role] = Date.now(); });
+const peerAlive = r => Date.now() - (peers[r] || 0) < 3200;
+const isDriver = () => ROLE === 'prompter' || !peerAlive('prompter');
+/* quem escuta o microfone: a janela escolhida nos ajustes; se ela não está aberta, a que está assume */
+const voiceOwner = () => state.voiceSource === ROLE || !peerAlive(state.voiceSource);
+setInterval(() => bus.send({ type: 'ping', role: ROLE }), 1000);
+bus.on('hello', m => {
+  bus.send({ type: 'ping', role: ROLE });
+  if (ROLE === 'control') bus.send({ type: 'patch', patch: Object.assign({}, state) });
+});
+
+/* ações que mexem na posição vão para quem rola (driver) */
+function dispatchPos(cmd) { if (isDriver()) execPos(cmd); else bus.send(Object.assign({ type: 'cmd' }, cmd)); }
+bus.on('cmd', m => { if (isDriver()) execPos(m); });
+
+/* ================================================================
+   Scroller: renderiza o roteiro num palco e cuida da rolagem
+   ================================================================ */
+class Scroller {
+  constructor(stage, opts = {}) {
+    stage.appendChild($('#stageTpl').content.cloneNode(true));
+    this.stage = stage; this.viewport = $('.viewport', stage); this.content = $('.content', stage);
+    this.onPos = opts.onPos || null; this.onEnd = opts.onEnd || null; this.isDriver = opts.isDriver || (() => true);
+    this.words = []; this.norms = []; this.blocks = []; this.tops = [];
+    this.y = 0; this.target = 0; this.lastY = NaN; this.minY = 0; this.maxY = 0; this.vh = 0; this.lineY = 0; this.lineH = 40;
+    this.rl = 0.35; this.scale = 1; this.speed = 40; this.playing = false; this.mode = 'auto'; this.hybrid = false; this.lookahead = 2;
+    this.lastVoiceAt = 0; this.curIdx = 0; this.hlIdx = -1; this.hlEl = null; this.lastT = 0; this.pendingIdx = null;
+    this.ro = new ResizeObserver(() => this.relayout(true));
+    this.ro.observe(this.viewport);
+    this.loop = this.loop.bind(this);
+    requestAnimationFrame(this.loop);
+  }
+  setScript(md) {
+    const keep = this.curIdx;
+    this.content.innerHTML = renderMarkdown(md) || '<p class="empty">Sem roteiro. Cole um texto no painel de controle.</p>';
+    const r = indexWords(this.content);
+    this.words = r.words; this.norms = r.words.map(w => w.norm); this.blocks = r.blocks; this.hlEl = null; this.hlIdx = -1;
+    this.layoutKey = null; this.relayout(false);
+    this.jumpToWord(clamp(keep, 0, Math.max(0, this.words.length - 1)), true);
+  }
+  relayout(keepWord) {
+    const idx = this.curIdx;
+    const cs = getComputedStyle(this.content);
+    const fs = parseFloat(cs.fontSize) || 40, lh = parseFloat(cs.lineHeight);
+    const key = [this.viewport.clientHeight, this.content.offsetHeight, fs, lh, this.rl, cs.width].join(':');
+    if (key === this.layoutKey) return; // nada mudou de tamanho: não mexe na rolagem
+    this.layoutKey = key;
+    this.vh = this.viewport.clientHeight || 1;
+    this.lineY = this.vh * this.rl;
+    this.lineH = isFinite(lh) ? lh : fs * 1.35;
+    this.tops = this.words.map(w => w.el.offsetTop + Math.min(w.el.offsetHeight, this.lineH) / 2);
+    this.minY = -this.lineY;
+    this.maxY = Math.max(this.minY, this.content.offsetHeight - this.lineY);
+    if (keepWord && this.words.length) this.jumpToWord(idx, true);
+  }
+  wordAt(contentY) { // primeira palavra da linha que está na linha de leitura
+    const t = this.tops; if (!t.length) return 0;
+    const ref = contentY + this.lineH * 0.5;
+    let lo = 0, hi = t.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (t[mid] <= ref) lo = mid + 1; else hi = mid; }
+    let i = Math.max(0, lo - 1);
+    while (i > 0 && Math.abs(t[i - 1] - t[i]) < 1) i--; // volta para o começo da linha
+    return i;
+  }
+  yForWord(i) { if (!this.tops.length) return this.minY; i = clamp(Math.round(i), 0, this.tops.length - 1); return clamp(this.tops[i] - this.lineY, this.minY, this.maxY); }
+  jumpToWord(i, instant) { this.target = this.yForWord(i); if (instant) { this.y = this.target; } this.curIdx = clamp(Math.round(i), 0, Math.max(0, this.words.length - 1)); }
+  follow(i) { this.target = this.yForWord(i); this.curIdx = i; }
+  nudge(frac) { this.target = clamp(this.target + frac * this.vh, this.minY, this.maxY); }
+  jumpBlock(dir, headingsOnly) {
+    const list = this.blocks.filter(b => !headingsOnly || b.heading); if (!list.length) return;
+    const cur = this.curIdx; let ci = -1;
+    for (let i = 0; i < list.length; i++) if (list[i].start <= cur) ci = i;
+    if (dir < 0) { const back = (ci >= 0 && cur - list[ci].start > 3) ? ci : ci - 1; this.jumpToWord(back >= 0 ? list[back].start : 0); }
+    else { if (ci + 1 < list.length) this.jumpToWord(list[ci + 1].start); else this.jumpToWord(this.words.length - 1); }
+  }
+  setPlaying(p) {
+    if (p && !this.playing && this.mode === 'auto' && this.isDriver() && this.words.length && this.y >= this.maxY - 1 && this.maxY - this.minY > this.vh * 0.5) this.jumpToWord(0, true);
+    this.playing = p;
+  }
+  setLookahead(n) {
+    if (n === this.lookahead) return;
+    this.lookahead = n;
+    if (this.mode === 'voice' && this.hlIdx >= 0 && this.isDriver()) { const w = this.words.length; this.target = this.yForWord(clamp(this.hlIdx + n, 0, w - 1)); }
+  }
+  voiceTo(i) {
+    this.lastVoiceAt = performance.now();
+    const n = this.words.length; if (!n) return;
+    this.target = this.yForWord(clamp(i + this.lookahead, 0, n - 1));
+    this.highlight(i);
+  }
+  highlight(i) {
+    if (this.hlEl) this.hlEl.classList.remove('current');
+    this.hlEl = (i >= 0 && this.words[i]) ? this.words[i].el : null; this.hlIdx = i;
+    if (this.hlEl && this.stage.classList.contains('hlword')) this.hlEl.classList.add('current');
+  }
+  progress() { const r = this.maxY - this.minY; return r > 0 ? clamp((this.y - this.minY) / r, 0, 1) : 0; }
+  remaining() { const v = this.speed * this.scale; return v > 0 ? (this.maxY - this.y) / v : Infinity; }
+  loop(t) {
+    requestAnimationFrame(this.loop);
+    const dt = this.lastT ? Math.min(0.1, (t - this.lastT) / 1000) : 0; this.lastT = t;
+    const driver = this.isDriver();
+    if (driver && this.playing) {
+      const drift = this.mode === 'auto' || (this.hybrid && performance.now() - this.lastVoiceAt > 2500);
+      if (drift) this.target += this.speed * this.scale * dt;
+    }
+    this.target = clamp(this.target, this.minY, this.maxY);
+    const diff = this.target - this.y;
+    if (Math.abs(diff) < 0.05) this.y = this.target;
+    else { const k = Math.abs(diff) > this.vh ? 0.28 : 0.15; this.y += diff * Math.min(1, k * dt * 60); }
+    if (this.y !== this.lastY) { this.content.style.transform = `translate3d(0,${-this.y}px,0)`; this.lastY = this.y; }
+    if (driver && this.words.length) {
+      const idx = this.wordAt(this.y + this.lineY);
+      if (idx !== this.curIdx || (this.playing && t - (this.lastPosT || 0) > 400)) { this.lastPosT = t; this.curIdx = idx; if (this.onPos) this.onPos(idx); }
+      if (this.playing && this.mode === 'auto' && this.y >= this.maxY - 0.5 && this.target >= this.maxY && this.maxY - this.minY > this.vh * 0.5) { this.playing = false; if (this.onEnd) this.onEnd(); }
+    }
+  }
+}
+
+function applyVars(stage, s, scale) {
+  const st = stage.style;
+  st.setProperty('--p-size', (s.fontSize * scale).toFixed(2) + 'px');
+  st.setProperty('--p-lh', s.lineHeight);
+  st.setProperty('--p-weight', s.fontWeight);
+  st.setProperty('--p-font', FONTS[s.fontFamily] || FONTS.sans);
+  st.setProperty('--p-width', s.width + '%');
+  st.setProperty('--p-align', s.align);
+  st.setProperty('--p-rl', s.readingLine + '%');
+  st.setProperty('--p-text', s.colorText); st.setProperty('--p-bg', s.colorBg);
+  st.setProperty('--p-accent', s.colorAccent); st.setProperty('--p-cue', s.colorCue);
+  st.setProperty('--p-hl', hexToRgba(s.colorAccent, .3));
+  st.setProperty('--p-cx', s.cameraX + '%'); st.setProperty('--p-cy', s.cameraY + '%'); st.setProperty('--p-cs', (s.cameraSize * scale).toFixed(1) + 'px'); st.setProperty('--p-cam', s.cameraColor);
+  const cl = stage.classList;
+  cl.toggle('mirror-h', !!s.mirrorH); cl.toggle('mirror-v', !!s.mirrorV); cl.toggle('nocues', !s.showCues); cl.toggle('noheads', !s.showHeadings);
+  cl.toggle('noline', !s.showReadingLine); cl.toggle('fade', !!s.fade); cl.toggle('blank', !!s.blank); cl.toggle('hlword', !!s.highlightWord);
+  cl.toggle('cam-on', !!s.camera); cl.toggle('cam-anel', s.cameraStyle === 'anel'); cl.toggle('cam-ponto', s.cameraStyle === 'ponto');
+}
+/* arrastar a mira da câmera dentro de um palco (prévia ou prompter) */
+function enableCamDrag(stage) {
+  const cam = $('.cam', stage); if (!cam) return;
+  let dragging = false, raf = null;
+  const place = e => {
+    const r = stage.getBoundingClientRect(); if (!r.width || !r.height) return;
+    let fx = clamp((e.clientX - r.left) / r.width, 0, 1), fy = clamp((e.clientY - r.top) / r.height, 0, 1);
+    if (state.mirrorH) fx = 1 - fx; if (state.mirrorV) fy = 1 - fy;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => { raf = null; patch({ cameraX: Math.round(fx * 1000) / 10, cameraY: Math.round(fy * 1000) / 10 }); });
+  };
+  cam.addEventListener('pointerdown', e => { dragging = true; cam.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation(); });
+  cam.addEventListener('pointermove', e => { if (dragging) place(e); });
+  const stop = e => { if (!dragging) return; dragging = false; try { cam.releasePointerCapture(e.pointerId); } catch (err) {} };
+  cam.addEventListener('pointerup', stop); cam.addEventListener('pointercancel', stop);
+  cam.addEventListener('dblclick', e => e.stopPropagation());
+}
+function applyStyle(sc, s, scale) {
+  applyVars(sc.stage, s, scale);
+  sc.rl = s.readingLine / 100; sc.scale = scale; sc.speed = s.speed; sc.mode = s.mode; sc.hybrid = s.voiceHybrid;
+  sc.setPlaying(s.playing); sc.setLookahead(s.voiceLookahead);
+  sc.highlight(s.mode === 'voice' ? sc.hlIdx : -1);
+  sc.relayout(true);
+}
+
+/* ================================================================
+   Voz: Web Speech API + alinhamento tolerante (Smith-Waterman)
+   ================================================================ */
+const simCache = new Map();
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = new Array(n + 1), cur = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
+}
+function sim(a, b) {
+  if (a === b) return 2;
+  const la = a.length, lb = b.length;
+  if (la < 3 || lb < 3 || Math.abs(la - lb) > 3) return -1;
+  const key = a + '|' + b; const c = simCache.get(key); if (c !== undefined) return c;
+  let v = -1;
+  if (Math.min(la, lb) >= 4 && (a.startsWith(b) || b.startsWith(a))) v = 1.2;
+  else { const r = 1 - lev(a, b) / Math.max(la, lb); v = r >= 0.75 ? 1.2 : -1; }
+  if (simCache.size > 30000) simCache.clear();
+  simCache.set(key, v); return v;
+}
+/* alinha a cauda falada com o trecho script[lo..hi); devolve o melhor fim de alinhamento */
+function alignTail(tail, script, lo, hi, cur) {
+  const k = tail.length, n = hi - lo; if (n <= 0 || !k) return null;
+  const GAP = 0.7; let prev = new Float32Array(n + 1), row = new Float32Array(n + 1); let best = null;
+  for (let i = 1; i <= k; i++) {
+    const s = tail[i - 1]; row[0] = 0;
+    for (let j = 1; j <= n; j++) {
+      const v = Math.max(0, prev[j - 1] + sim(s, script[lo + j - 1]), prev[j] - GAP, row[j - 1] - GAP);
+      row[j] = v;
+    }
+    if (i >= k - 1) { // o alinhamento deve terminar na última ou penúltima palavra falada
+      const endPen = (i === k) ? 0 : 0.6;
+      for (let j = 1; j <= n; j++) {
+        const v = row[j]; if (v <= 0) continue;
+        const idx = lo + j - 1, d = idx - cur;
+        const dist = d >= 0 ? 0.012 * d : Math.min(3, 0.4 + 0.015 * (-d));
+        const sc = v - endPen - dist;
+        if (!best || sc > best.score) best = { idx, score: sc, raw: v };
+      }
+    }
+    const tmp = prev; prev = row; row = tmp;
+  }
+  return best;
+}
+
+class Voice {
+  constructor(o) { Object.assign(this, o); this.active = false; this.rec = null; this.prevFinals = []; this.sessionFinal = ''; this.cursor = 0; this.lost = false; this.lastMatchAt = 0; this.K = 10; this.status = 'off'; this.timer = null; this.lastWords = []; }
+  supported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  start(lang) {
+    if (this.active) { if (lang !== this.lang) { this.lang = lang; this.restart(); } return; }
+    if (!this.supported()) { this.setStatus('unsupported'); return; }
+    this.lang = lang; this.active = true; this.lost = false; this.cursor = this.getCursor(); this.lastMatchAt = performance.now();
+    this.spawn();
+  }
+  stop() { this.active = false; this.prevFinals = []; if (this.rec) { try { this.rec.abort(); } catch (e) {} this.rec = null; } this.setStatus('off'); }
+  restart() { if (this.rec) { try { this.rec.abort(); } catch (e) {} } }
+  /* o usuário pulou manualmente: esquece o que foi falado antes e recomeça a escutar dali */
+  resync(idx) {
+    this.cursor = idx; this.lost = false; this.lastMatchAt = performance.now();
+    this.lastWords = []; this.prevFinals = []; this.sessionFinal = ''; this.dropSession = true;
+    if (this.active && this.rec) this.restart();
+  }
+  setStatus(s, extra) { this.status = s; if (this.onStatus) this.onStatus(s, extra); }
+  spawn() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r = new SR(); r.lang = this.lang || 'pt-BR'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+    let gotStart = false, gotResult = false; const spawnedAt = performance.now();
+    r.onstart = () => { gotStart = true; if (this.status !== 'synced' && this.status !== 'searching') this.setStatus('listening'); };
+    r.onresult = e => {
+      gotResult = true; this.failStreak = 0;
+      const finals = [], interims = [];
+      for (let i = 0; i < e.results.length; i++) { const t = e.results[i][0].transcript; (e.results[i].isFinal ? finals : interims).push(t); }
+      this.sessionFinal = finals.join(' ');
+      this.lastWords = this.prevFinals.concat(tokenize(this.sessionFinal), tokenize(interims.join(' ')));
+      if (this.onTranscript) this.onTranscript(finals.join(' '), interims.join(' '));
+      this.schedule();
+    };
+    r.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { this.active = false; this.setStatus('denied'); }
+      else if (e.error === 'network') this.setStatus('network');
+      else if (e.error === 'audio-capture') this.setStatus('nomic');
+    };
+    r.onend = () => {
+      if (this.dropSession) { this.dropSession = false; this.prevFinals = []; } else this.prevFinals = this.prevFinals.concat(tokenize(this.sessionFinal)).slice(-12);
+      this.sessionFinal = '';
+      // terminou na hora, sem resultado: o serviço de reconhecimento não está disponível
+      const quick = !gotStart || (performance.now() - spawnedAt < 1200 && !gotResult);
+      this.failStreak = quick ? (this.failStreak || 0) + 1 : 0;
+      if (!this.active) { this.setStatus('off'); return; }
+      let delay = 250;
+      if (this.failStreak >= 3) { delay = 3000; if (this.status !== 'denied') this.setStatus('unavailable'); }
+      setTimeout(() => { if (this.active) this.spawn(); }, delay);
+    };
+    this.rec = r;
+    try { r.start(); } catch (e) { setTimeout(() => { if (this.active) this.spawn(); }, 500); return; }
+    setTimeout(() => { if (this.rec === r && this.active && !gotStart) this.setStatus('waiting'); }, 1500);
+  }
+  schedule() { if (this.timer) return; this.timer = setTimeout(() => { this.timer = null; this.process(); }, 90); }
+  process() {
+    const tail = this.lastWords.slice(-this.K); if (tail.length < 2) return;
+    const script = this.getWords(); const n = script.length; if (!n) return;
+    const ext = this.getCursor(); if (Math.abs(ext - this.cursor) > 15) this.cursor = ext; // alguém pulou manualmente
+    const cur = this.cursor; const weak = 5.5, strong = this.strong || 7;
+    let best = null;
+    const near = alignTail(tail, script, Math.max(0, cur - 80), Math.min(n, cur + 300), cur);
+    if (near && near.score >= weak) best = near;
+    if (!best || this.lost) { const g = alignTail(tail, script, 0, n, cur); if (g && g.score >= strong && (!best || g.score > best.score + 1.5)) best = g; }
+    const now = performance.now();
+    if (!best) { if (!this.lost && now - this.lastMatchAt > 3500) { this.lost = true; this.setStatus('searching'); } return; }
+    this.lastMatchAt = now; this.lost = false;
+    if (best.idx > this.cursor || best.idx < this.cursor - 3) { this.cursor = best.idx; if (this.onMatch) this.onMatch(best.idx, best); }
+    this.setStatus('synced', best.idx);
+  }
+}
+
+/* ================================================================
+   ações, teclado, pedal (teclas) e pedal por WebHID
+   ================================================================ */
+let activeScroller = null; // palco desta página
+let voiceEngine = null; // o reconhecedor desta página (se houver)
+function execPos(c) {
+  const sc = activeScroller; if (!sc) return;
+  const n = sc.words.length;
+  switch (c.cmd) {
+    case 'seek': case 'word': sc.jumpToWord(c.idx); break;
+    case 'nudge': sc.nudge(c.frac); break;
+    case 'prevBlock': sc.jumpBlock(-1, false); break;
+    case 'nextBlock': sc.jumpBlock(1, false); break;
+    case 'prevSection': sc.jumpBlock(-1, true); break;
+    case 'nextSection': sc.jumpBlock(1, true); break;
+    case 'top': sc.jumpToWord(0); break;
+    case 'bottom': sc.jumpToWord(Math.max(0, n - 1)); break;
+    case 'voice': sc.voiceTo(c.idx); sendPos(true); return;
+  }
+  // pulo manual: avisa o reconhecedor (daqui ou da outra janela) para recomeçar desse ponto
+  const idx = sc.wordAt(sc.target + sc.lineY);
+  sc.highlight(-1);
+  if (voiceEngine) voiceEngine.resync(idx);
+  bus.send({ type: 'resync', idx });
+  sendPos(true);
+}
+bus.on('resync', m => { if (voiceEngine) voiceEngine.resync(m.idx); });
+let lastPosSent = 0, posTimer = null;
+function sendPos(force) {
+  const sc = activeScroller; if (!sc || !isDriver()) return;
+  const now = Date.now();
+  if (!force && now - lastPosSent < 120) { if (!posTimer) posTimer = setTimeout(() => { posTimer = null; sendPos(true); }, 130); return; }
+  lastPosSent = now;
+  state.wordIndex = sc.curIdx; saveState();
+  bus.send({ type: 'pos', i: sc.curIdx, p: sc.progress(), hl: sc.hlIdx, rem: sc.remaining() });
+}
+
+const ACTIONS = {
+  toggle: ['Play / Pause', () => patch({ playing: !state.playing })],
+  play: ['Play', () => patch({ playing: true })],
+  pause: ['Pause', () => patch({ playing: false })],
+  speedUp: ['Mais rápido', () => patch({ speed: clamp(state.speed + 5, 0, 150) })],
+  speedDown: ['Mais devagar', () => patch({ speed: clamp(state.speed - 5, 0, 150) })],
+  prevBlock: ['Bloco anterior', () => dispatchPos({ cmd: 'prevBlock' })],
+  nextBlock: ['Próximo bloco', () => dispatchPos({ cmd: 'nextBlock' })],
+  prevSection: ['Seção anterior (título)', () => dispatchPos({ cmd: 'prevSection' })],
+  nextSection: ['Próxima seção (título)', () => dispatchPos({ cmd: 'nextSection' })],
+  nudgeBack: ['Voltar meia tela', () => dispatchPos({ cmd: 'nudge', frac: -0.5 })],
+  nudgeFwd: ['Avançar meia tela', () => dispatchPos({ cmd: 'nudge', frac: 0.5 })],
+  top: ['Voltar ao início', () => dispatchPos({ cmd: 'top' })],
+  bottom: ['Ir para o fim', () => dispatchPos({ cmd: 'bottom' })],
+  reset: ['Reiniciar (início + pause)', () => { patch({ playing: false }); dispatchPos({ cmd: 'top' }); }],
+  voice: ['Ligar / desligar voz', () => patch({ mode: state.mode === 'voice' ? 'auto' : 'voice' })],
+  blank: ['Esconder / mostrar texto', () => patch({ blank: !state.blank })],
+  fontUp: ['Fonte maior', () => patch({ fontSize: clamp(state.fontSize + 4, 20, 160) })],
+  fontDown: ['Fonte menor', () => patch({ fontSize: clamp(state.fontSize - 4, 20, 160) })],
+  mirrorH: ['Espelhar horizontal', () => patch({ mirrorH: !state.mirrorH })],
+  mirrorV: ['Espelhar vertical', () => patch({ mirrorV: !state.mirrorV })],
+  fullscreen: ['Tela cheia (prompter)', () => toggleFullscreen()],
+};
+const runAction = name => { const a = ACTIONS[name]; if (a) a[1](); };
+const KEYMAP = [
+  ['Space', 'toggle'], ['ArrowUp', 'speedUp'], ['ArrowDown', 'speedDown'], ['ArrowLeft', 'prevBlock'], ['ArrowRight', 'nextBlock'],
+  ['Shift+ArrowLeft', 'prevSection'], ['Shift+ArrowRight', 'nextSection'], ['PageUp', 'nudgeBack'], ['PageDown', 'nudgeFwd'],
+  ['Home', 'top'], ['End', 'bottom'], ['R', 'reset'], ['V', 'voice'], ['B', 'blank'], ['+', 'fontUp'], ['-', 'fontDown'],
+  ['M', 'mirrorH'], ['Shift+M', 'mirrorV'], ['F', 'fullscreen'], ['Escape', 'pause'],
+];
+const keyMap = new Map(KEYMAP);
+function keyName(e) {
+  let k = e.key;
+  if (k === ' ' || e.code === 'Space') k = 'Space';
+  else if (k === '=' ) k = '+';
+  else if (k.length === 1) k = k.toUpperCase();
+  if (e.shiftKey && k.length > 1 && k !== 'Shift') k = 'Shift+' + k;
+  if (e.shiftKey && k === 'M') k = 'Shift+M';
+  return k;
+}
+function toggleFullscreen() {
+  if (ROLE !== 'prompter') return;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else document.documentElement.requestFullscreen().catch(() => {});
+}
+/* ações que fazem sentido repetir enquanto a tecla ou o pedal fica pressionado */
+const REPEATABLE = new Set(['prevBlock', 'nextBlock', 'prevSection', 'nextSection', 'speedUp', 'speedDown', 'nudgeBack', 'nudgeFwd', 'fontUp', 'fontDown']);
+const REPEAT_DELAY = 450, REPEAT_EVERY = 150;
+let lastKeyRepeat = 0;
+document.addEventListener('keydown', e => {
+  const t = e.target; const tag = (t && t.tagName || '').toLowerCase();
+  const typing = tag === 'textarea' || tag === 'select' || (tag === 'input' && !['range', 'checkbox', 'color', 'file', 'button'].includes(t.type));
+  const k = keyName(e);
+  const pedalIdx = state.pedal.keys.indexOf(k);
+  let act = null;
+  if (pedalIdx >= 0 && (!typing || /^F\d+$/.test(k))) act = state.pedal.actions[pedalIdx];
+  else {
+    if (typing) { if (k === 'Escape') t.blur(); return; }
+    if (tag === 'input' && t.type === 'range' && /Arrow|Home|End|Page/.test(k)) return; // deixa o slider cuidar
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    act = keyMap.get(k);
+  }
+  if (!act) return;
+  e.preventDefault();
+  if (e.repeat) { // tecla segurada: só repete o que faz sentido, e não mais rápido que o pedal
+    if (!REPEATABLE.has(act)) return;
+    const now = Date.now(); if (now - lastKeyRepeat < REPEAT_EVERY) return; lastKeyRepeat = now;
+  }
+  runAction(act);
+});
+/* botões e sliders não ficam com o foco, para o Espaço/setas do pedal não baterem neles */
+document.addEventListener('click', e => { const b = e.target.closest('button, label.btn'); if (b && b.blur) b.blur(); });
+document.addEventListener('change', e => { const el = e.target; if (el.matches('input[type=range], select, input[type=checkbox], input[type=color]')) el.blur(); });
+
+/* ---- pedal por WebHID (Stream Deck Pedal: vendor 0x0fd9) ---- */
+const hid = {
+  device: null, prev: null, calibrating: -1, onStatus: null, onBytes: null, timers: [null, null, null], busy: false, listening: false,
+  available() { return !!navigator.hid; },
+  /* quem fica com o pedal: o painel de controle; o prompter só quando está sozinho (tela única) */
+  shouldOwn() { return ROLE === 'control' || !peerAlive('control'); },
+  async connect(prompt) {
+    if (!this.available()) { this.status('WebHID indisponível neste navegador (use Chrome ou Edge).'); return false; }
+    try {
+      let dev = null;
+      if (!prompt) { const list = await navigator.hid.getDevices(); dev = list.find(d => d.vendorId === 0x0fd9) || null; }
+      if (!dev && prompt) { const picked = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0fd9 }] }); dev = picked && picked[0]; }
+      if (!dev) { if (prompt) this.status('Nenhum dispositivo selecionado.'); return false; }
+      if (!dev.opened) await dev.open();
+      this.device = dev; this.prev = null;
+      dev.addEventListener('inputreport', e => this.onReport(e));
+      if (!this.listening) { this.listening = true; navigator.hid.addEventListener('disconnect', ev => { if (ev.device === this.device) { this.device = null; [0, 1, 2].forEach(p => this.release(p)); this.status('pedal desconectado'); } }); }
+      this.status('conectado: ' + (dev.productName || 'dispositivo Elgato'));
+      return true;
+    } catch (err) { if (prompt) this.status('falha ao conectar: ' + (err.message || err)); return false; }
+  },
+  async disconnect(why) {
+    const d = this.device; if (!d) return; this.device = null; [0, 1, 2].forEach(p => this.release(p));
+    try { await d.close(); } catch (e) {}
+    this.status(why || 'pedal desconectado');
+  },
+  /* a cada segundo: conecta se este for o dono e ainda não tiver o pedal; solta se a outra janela assumiu */
+  async tick() {
+    if (!this.available() || !state.hid.auto || this.busy) return;
+    this.busy = true;
+    try {
+      const own = this.shouldOwn();
+      if (own && !this.device) await this.connect(false);
+      else if (!own && this.device) await this.disconnect('pedal passou para o painel de controle');
+    } finally { this.busy = false; }
+  },
+  status(s) { if (this.onStatus) this.onStatus(s, !!this.device); },
+  onReport(e) {
+    if (!this.shouldOwn()) return; // a outra janela é quem responde ao pedal
+    const d = e.data; const bytes = new Array(d.byteLength); for (let i = 0; i < d.byteLength; i++) bytes[i] = d.getUint8(i);
+    if (this.onBytes) this.onBytes(bytes);
+    const prev = this.prev;
+    if (this.calibrating >= 0) {
+      const idx = bytes.findIndex((b, i) => b && !(prev && prev[i]));
+      if (idx >= 0) {
+        const offs = state.hid.offsets.slice(); offs[this.calibrating] = idx;
+        patch({ hid: Object.assign({}, state.hid, { offsets: offs }) });
+        this.calibrating++;
+        if (this.calibrating > 2) { this.calibrating = -1; this.status('calibrado: bytes ' + offs.join(', ')); }
+        else this.status('calibrando: pressione o pedal ' + ['esquerdo', 'central', 'direito'][this.calibrating]);
+      }
+    } else if (prev) {
+      state.hid.offsets.forEach((o, p) => {
+        const down = !!bytes[o], was = !!prev[o];
+        if (down && !was) this.press(p); else if (!down && was) this.release(p);
+      });
+    }
+    this.prev = bytes;
+  },
+  /* pedal pressionado: executa já e, se segurar, repete como uma tecla */
+  press(p) {
+    this.release(p);
+    const act = state.pedal.actions[p]; runAction(act);
+    if (!REPEATABLE.has(act)) return;
+    this.timers[p] = setTimeout(() => { this.timers[p] = setInterval(() => runAction(state.pedal.actions[p]), REPEAT_EVERY); }, REPEAT_DELAY);
+  },
+  release(p) { const t = this.timers[p]; if (t != null) { clearTimeout(t); clearInterval(t); this.timers[p] = null; } },
+  calibrate() { if (!this.device) return; this.calibrating = 0; this.status('calibrando: pressione o pedal esquerdo'); }
+};
+
+setInterval(() => hid.tick(), 1200);
+
+/* ================================================================
+   PAINEL DE CONTROLE
+   ================================================================ */
+function fillRange(inp) { const min = +inp.min || 0, max = +inp.max || 100; inp.style.setProperty('--fill', ((inp.value - min) / (max - min) * 100).toFixed(2) + '%'); }
+function initControl() {
+  const root = $('#control'); root.hidden = false; document.title = 'Teleprompter · Controle';
+  const previewStage = $('#previewStage');
+  const sc = new Scroller(previewStage, { isDriver, onPos: () => { sendPos(false); updateProgress(); }, onEnd: () => { patch({ playing: false }); updateProgress(); } });
+  activeScroller = sc;
+  enableCamDrag(previewStage);
+  const previewScale = () => Math.max(0.2, previewStage.clientWidth / 1024);
+  const editPreview = $('#editPreview'); editPreview.appendChild($('#stageTpl').content.cloneNode(true));
+  const editContent = $('.content', editPreview);
+  const editScale = () => Math.max(0.2, editPreview.clientWidth / 1024);
+
+  /* ---- telas (Controle / Roteiro) ---- */
+  function showScreen(name) {
+    $$('#screens .scr').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+    $('#screenRun').hidden = name !== 'run'; $('#screenEdit').hidden = name !== 'edit';
+    if (name === 'edit') renderEditPreview(); else editor.blur();
+    try { localStorage.setItem('teleprompter:screen', name); } catch (e) {}
+  }
+  $$('#screens .scr').forEach(b => b.addEventListener('click', () => showScreen(b.dataset.screen)));
+
+  /* ---- gaveta de ajustes ---- */
+  const drawer = $('#drawer'), scrim = $('#scrim');
+  const openDrawer = () => { drawer.hidden = false; root.classList.add('drawer-open'); scrim.hidden = window.innerWidth > 900; };
+  const closeDrawer = () => { drawer.hidden = true; root.classList.remove('drawer-open'); scrim.hidden = true; };
+  $('#btnSettings').addEventListener('click', () => drawer.hidden ? openDrawer() : closeDrawer());
+  $('#btnCloseDrawer').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) { e.stopImmediatePropagation(); e.preventDefault(); closeDrawer(); } }, true);
+  $$('.tab').forEach(t => t.addEventListener('click', () => {
+    $$('.tab').forEach(x => x.classList.toggle('active', x === t));
+    $$('.tabpane').forEach(p => p.hidden = p.dataset.pane !== t.dataset.tab);
+  }));
+
+  /* ---- roteiro ---- */
+  const editor = $('#editor');
+  editor.value = state.script;
+  const commitScript = debounce(() => patch({ script: editor.value }), 300);
+  editor.addEventListener('input', commitScript);
+  editor.addEventListener('focus', () => document.body.classList.add('editing'));
+  editor.addEventListener('blur', () => document.body.classList.remove('editing'));
+  function loadFile(file) {
+    if (!file) return; const rd = new FileReader();
+    rd.onload = () => { editor.value = String(rd.result); patch({ script: editor.value }); dispatchPos({ cmd: 'top' }); };
+    rd.readAsText(file);
+  }
+  $('#fileInput').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value = ''; });
+  const dz = $('#dropzone');
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
+  $('#btnSample').addEventListener('click', () => { editor.value = SAMPLE; patch({ script: SAMPLE }); dispatchPos({ cmd: 'top' }); });
+  $('#btnClear').addEventListener('click', () => { if (editor.value && !confirm('Limpar o roteiro?')) return; editor.value = ''; patch({ script: '' }); });
+  $('#btnDownload').addEventListener('click', () => {
+    const blob = new Blob([editor.value], { type: 'text/markdown;charset=utf-8' }); const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'roteiro.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  function updateStats() {
+    const n = sc.words.length;
+    $('#scriptStats').textContent = n ? `${n} palavras · ${fmtTime(n / 150 * 60)} a 150 ppm` : '';
+  }
+  const editVars = () => Object.assign({}, state, { blank: false, mirrorH: false, mirrorV: false, fade: false, camera: false, showHeadings: true });
+  function renderEditPreview() {
+    if ($('#screenEdit').hidden) return;
+    editContent.innerHTML = renderMarkdown(state.script) || '<p class="empty">Sem roteiro.</p>';
+    applyVars(editPreview, editVars(), editScale());
+  }
+
+  /* ---- transporte ---- */
+  $$('[data-cmd]').forEach(b => b.addEventListener('click', () => dispatchPos({ cmd: b.dataset.cmd })));
+  $$('[data-act]').forEach(b => b.addEventListener('click', () => runAction(b.dataset.act)));
+  $('#btnToggle').addEventListener('click', () => { editor.blur(); runAction('toggle'); });
+  $$('#modeSeg button').forEach(b => b.addEventListener('click', () => patch({ mode: b.dataset.mode })));
+  const speed = $('#speed'); speed.addEventListener('input', () => { fillRange(speed); patch({ speed: +speed.value }); });
+  const progress = $('#progress'); let seeking = false;
+  progress.addEventListener('input', () => { seeking = true; fillRange(progress); const n = sc.words.length; dispatchPos({ cmd: 'seek', idx: Math.round(progress.value / 1000 * Math.max(0, n - 1)) }); });
+  progress.addEventListener('change', () => { seeking = false; });
+  let lastPos = { i: 0, p: 0, rem: Infinity };
+  function updateProgress() {
+    if (isDriver()) lastPos = { i: sc.curIdx, p: sc.progress(), rem: sc.remaining() };
+    const n = sc.words.length;
+    if (!seeking) { progress.value = Math.round(lastPos.p * 1000); fillRange(progress); }
+    $('#progressText').textContent = n ? `${Math.round(lastPos.p * 100)}% · palavra ${Math.min(n, lastPos.i + 1)} de ${n}` : 'Sem roteiro';
+    $('#progressRight').textContent = (state.playing && state.mode === 'auto' && isFinite(lastPos.rem)) ? `faltam ${fmtTime(lastPos.rem)}` : (n ? `${fmtTime(n / 150 * 60)} a 150 ppm` : '');
+  }
+  bus.on('pos', m => { if (ROLE === 'control' && !isDriver()) { sc.follow(m.i); sc.highlight(m.hl); lastPos = { i: m.i, p: m.p, rem: m.rem == null ? Infinity : m.rem }; state.wordIndex = m.i; saveState(); updateProgress(); } });
+  setInterval(updateProgress, 500);
+
+  /* ---- abrir o prompter ---- */
+  $('#btnPrompterHere').addEventListener('click', () => { location.hash = '#prompter'; });
+  $('#btnOpenPrompter').addEventListener('click', async () => {
+    const url = location.href.split('#')[0] + '#prompter';
+    let feats = 'popup=yes,width=1024,height=600';
+    try {
+      if ('getScreenDetails' in window) {
+        const det = await window.getScreenDetails();
+        const other = det.screens.find(s => s !== det.currentScreen);
+        if (other) feats = `popup=yes,left=${other.availLeft},top=${other.availTop},width=${other.availWidth},height=${other.availHeight}`;
+      }
+    } catch (e) {}
+    const w = window.open(url, 'tp-prompter', feats);
+    if (!w) alert('O navegador bloqueou a nova janela. Permita pop-ups para esta página e tente de novo.');
+  });
+
+  /* ---- campos de ajuste ---- */
+  const TEXT_FIELDS = [
+    ['fontSize', 'Tamanho da fonte', 'range', { min: 20, max: 160, step: 2, unit: 'px' }],
+    ['lineHeight', 'Altura da linha', 'range', { min: 1, max: 2, step: 0.05 }],
+    ['width', 'Largura do texto', 'range', { min: 40, max: 100, step: 1, unit: '%' }],
+    ['readingLine', 'Posição da linha de leitura', 'range', { min: 15, max: 70, step: 1, unit: '%' }],
+    ['fontFamily', 'Fonte', 'select', { options: [['sans', 'Sans (sistema)'], ['rounded', 'Arredondada'], ['serif', 'Serif'], ['mono', 'Mono']] }],
+    ['fontWeight', 'Peso', 'select', { options: [['400', 'Normal'], ['500', 'Médio'], ['600', 'Semi-negrito'], ['700', 'Negrito']] }],
+    ['align', 'Alinhamento', 'select', { options: [['left', 'Esquerda'], ['center', 'Centro']] }],
+    ['colorText', 'Cor do texto', 'color'], ['colorBg', 'Cor de fundo', 'color'], ['colorAccent', 'Destaque e linha de leitura', 'color'], ['colorCue', 'Cor das deixas', 'color'],
+    ['showReadingLine', 'Mostrar linha de leitura', 'check'], ['fade', 'Esmaecer longe da linha', 'check'],
+    ['highlightWord', 'Marcar a palavra reconhecida (voz)', 'check'], ['showCues', 'Mostrar deixas [entre colchetes]', 'check'], ['showHeadings', 'Mostrar títulos de seção', 'check'],
+    ['mirrorH', 'Espelhar na horizontal', 'check'], ['mirrorV', 'Espelhar na vertical', 'check'],
+  ];
+  const CAMERA_FIELDS = [
+    ['camera', 'Mostrar marcador da câmera', 'check'],
+    ['cameraStyle', 'Estilo', 'select', { options: [['mira', 'Mira'], ['anel', 'Anel'], ['ponto', 'Ponto']] }],
+    ['cameraX', 'Posição horizontal', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
+    ['cameraY', 'Posição vertical', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
+    ['cameraSize', 'Tamanho', 'range', { min: 16, max: 240, step: 2, unit: 'px' }],
+    ['cameraColor', 'Cor', 'color'],
+  ];
+  const VOICE_FIELDS = [
+    ['voiceLang', 'Idioma', 'select', { options: [['pt-BR', 'Português (Brasil)'], ['pt-PT', 'Português (Portugal)'], ['en-US', 'English (US)'], ['en-GB', 'English (UK)'], ['es-ES', 'Español (España)'], ['es-MX', 'Español (México)'], ['fr-FR', 'Français'], ['de-DE', 'Deutsch'], ['it-IT', 'Italiano'], ['ja-JP', '日本語']] }],
+    ['voiceSource', 'Microfone na janela', 'select', { options: [['control', 'do controle'], ['prompter', 'do prompter']] }],
+    ['voiceLookahead', 'Antecipação (palavras à frente da fala)', 'range', { min: 0, max: 8, step: 1 }],
+    ['voiceJump', 'Confiança para pular longe', 'range', { min: 5, max: 11, step: 1, labels: { 5: 'baixa', 6: 'baixa', 7: 'normal', 8: 'normal', 9: 'alta', 10: 'alta', 11: 'muito alta' } }],
+    ['voiceHybrid', 'Continuar rolando devagar se perder a voz', 'check'],
+  ];
+  const widgets = {};
+  function buildFields(container, defs) {
+    for (const [key, label, type, o = {}] of defs) {
+      const f = document.createElement('div'); f.className = 'field ' + type;
+      const id = 'f_' + key;
+      if (type === 'range') {
+        f.innerHTML = `<label for="${id}">${label}</label><span class="val"></span><input type="range" id="${id}" min="${o.min}" max="${o.max}" step="${o.step}">`;
+        const inp = $('input', f), val = $('.val', f);
+        inp.addEventListener('input', () => { fillRange(inp); patch({ [key]: +inp.value }); });
+        widgets[key] = v => { if (document.activeElement !== inp) inp.value = v; fillRange(inp); val.textContent = (o.labels && o.labels[v]) || (v + (o.unit || '')); };
+      } else if (type === 'select') {
+        f.innerHTML = `<label for="${id}">${label}</label><select id="${id}">${o.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>`;
+        const sel = $('select', f); sel.addEventListener('change', () => patch({ [key]: sel.value }));
+        widgets[key] = v => { sel.value = v; };
+      } else if (type === 'color') {
+        f.innerHTML = `<label for="${id}">${label}</label><input type="color" id="${id}">`;
+        const inp = $('input', f); inp.addEventListener('input', () => patch({ [key]: inp.value }));
+        widgets[key] = v => { inp.value = v; };
+      } else if (type === 'check') {
+        f.innerHTML = `<label for="${id}">${label}</label><input type="checkbox" id="${id}">`;
+        const inp = $('input', f); inp.addEventListener('change', () => patch({ [key]: inp.checked }));
+        widgets[key] = v => { inp.checked = !!v; };
+      }
+      container.appendChild(f);
+    }
+  }
+  buildFields($('#paneText'), TEXT_FIELDS);
+  buildFields($('#cameraFields'), CAMERA_FIELDS);
+  buildFields($('#voiceFields'), VOICE_FIELDS);
+  $('#btnCamAlign').addEventListener('click', () => patch({ readingLine: Math.round(clamp(state.cameraY, 15, 70)), camera: true }));
+
+  /* ---- pedal ---- */
+  const pedalRows = $('#pedalRows'); let recording = -1;
+  const prettyKey = k => ({ Space: 'Espaço', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Escape: 'Esc' })[k] || k;
+  function buildPedal() {
+    pedalRows.innerHTML = '';
+    ['Pedal esquerdo', 'Pedal central', 'Pedal direito'].forEach((name, i) => {
+      const row = document.createElement('div'); row.className = 'pedal-row';
+      row.innerHTML = `<span class="name">${name}</span><select></select><button class="btn small key" title="Clique e pressione a tecla que o Stream Deck vai enviar"></button>`;
+      const sel = $('select', row); sel.innerHTML = Object.entries(ACTIONS).filter(([k]) => k !== 'fullscreen').map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      sel.value = state.pedal.actions[i];
+      sel.addEventListener('change', () => { const a = state.pedal.actions.slice(); a[i] = sel.value; patch({ pedal: Object.assign({}, state.pedal, { actions: a }) }); });
+      const kb = $('.key', row); kb.textContent = prettyKey(state.pedal.keys[i]);
+      kb.addEventListener('click', e => { e.stopPropagation(); recording = i; $$('.pedal-row .key').forEach(b => b.classList.remove('recording')); kb.classList.add('recording'); kb.textContent = 'pressione…'; });
+      pedalRows.appendChild(row);
+    });
+  }
+  document.addEventListener('keydown', e => {
+    if (recording < 0) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const k = keyName(e); if (['Shift', 'Meta', 'Control', 'Alt'].includes(e.key)) return;
+    const keys = state.pedal.keys.slice(); keys[recording] = k; recording = -1;
+    patch({ pedal: Object.assign({}, state.pedal, { keys }) }); buildPedal();
+  }, true);
+  buildPedal();
+  hid.onStatus = (s, connected) => { $('#hidStatus').textContent = s; $('#btnHidCal').hidden = !connected; setLamp('#lampPedal', connected ? 'on' : '', connected ? 'pedal por USB' : 'pedal por teclado'); };
+  hid.onBytes = b => { $('#hidBytes').textContent = 'relatório HID: ' + b.slice(0, 16).join(' ') + (b.length > 16 ? ' …' : ''); };
+  $('#btnHid').addEventListener('click', async () => { if (await hid.connect(true)) patch({ hid: Object.assign({}, state.hid, { auto: true }) }); });
+  $('#btnHidCal').addEventListener('click', () => hid.calibrate());
+  if (!hid.available()) $('#btnHid').disabled = true;
+  else if (state.hid.auto) hid.tick();
+
+  /* ---- tabela de teclas ---- */
+  $('#keysTable').innerHTML = KEYMAP.map(([k, a]) => `<tr><td>${k.split('+').map(x => `<span class="kbd">${prettyKey(x)}</span>`).join(' ')}</td><td>${ACTIONS[a][0]}</td></tr>`).join('');
+
+  /* ---- voz ---- */
+  const voice = new Voice({
+    getWords: () => sc.norms, getCursor: () => sc.curIdx, strong: state.voiceJump,
+    onMatch: idx => dispatchPos({ cmd: 'voice', idx }),
+    onStatus: (s, idx) => renderVoiceStatus(s, idx),
+    onTranscript: (fin, int) => { $('#transcript').innerHTML = `<span class="final">${esc(fin.slice(-400))}</span> <span class="interim">${esc(int)}</span>`; }
+  });
+  voiceEngine = voice;
+  const VOICE_TEXT = { off: ['desligada', ''], paused: ['em pausa', ''], listening: ['ouvindo', 'busy'], synced: ['sincronizada', 'ok'], searching: ['procurando sua posição', 'busy'], denied: ['sem permissão de microfone', 'bad'], unsupported: ['navegador sem suporte (use o Chrome)', 'bad'], network: ['erro de rede no reconhecimento', 'bad'], nomic: ['nenhum microfone encontrado', 'bad'], unavailable: ['reconhecimento indisponível neste navegador', 'bad'], waiting: ['aguardando o microfone', 'busy'] };
+  function renderVoiceStatus(s, idx) {
+    const [t, cls] = VOICE_TEXT[s] || [s, '']; const el = $('#voiceStatus'); el.className = 'voice-status ' + cls; el.textContent = t + (s === 'synced' && idx != null ? ` · palavra ${idx + 1}` : '');
+    const remote = state.mode === 'voice' && state.playing && !voiceOwner();
+    setLamp('#lampVoice', cls === 'ok' ? 'on' : cls, 'voz ' + (remote ? 'no prompter · ' + t : t));
+  }
+  bus.on('voice-status', m => { if (!voiceOwner()) renderVoiceStatus(m.s, m.idx); });
+  let voiceMine = false;
+  function syncVoice() {
+    voice.strong = state.voiceJump;
+    const mine = voiceMine = state.mode === 'voice' && state.playing && voiceOwner();
+    if (mine) voice.start(state.voiceLang); else voice.stop();
+    $('#voiceHint').textContent = (state.mode === 'voice' && state.playing && !mine) ? 'O microfone está na janela do prompter.' : (state.voiceHybrid ? 'Sem voz por alguns segundos, o texto continua na rolagem de reserva.' : 'Se você improvisar, o texto espera. Ao voltar ao roteiro, ele reencontra o ponto.');
+    if (state.mode !== 'voice') { renderVoiceStatus('off'); }
+    else if (!state.playing) { $('#transcript').textContent = 'Dê play (ou use o pedal) para começar a ouvir.'; renderVoiceStatus('paused'); }
+    else if (!mine) renderVoiceStatus('listening');
+  }
+  setInterval(() => { if (state.mode === 'voice' && state.playing && (state.playing && voiceOwner()) !== voiceMine) syncVoice(); }, 700);
+
+  /* ---- reações ao estado ---- */
+  function setLamp(sel, cls, text) { const p = $(sel); p.className = 'lamp ' + (cls || ''); $('.t', p).textContent = text; }
+  function render(changed) {
+    if (changed.script) { sc.setScript(state.script); if (document.activeElement !== editor) editor.value = state.script; updateStats(); voice.cursor = sc.curIdx; renderEditPreview(); }
+    for (const k in widgets) if (changed[k]) widgets[k](state[k]);
+    applyStyle(sc, state, previewScale());
+    if (!changed.script && !$('#screenEdit').hidden) applyVars(editPreview, editVars(), editScale());
+    root.classList.toggle('mode-auto', state.mode !== 'voice'); root.classList.toggle('mode-voice', state.mode === 'voice'); root.classList.toggle('hybrid', !!state.voiceHybrid);
+    $('#speedLabel').textContent = state.mode === 'voice' ? 'Rolagem de reserva' : 'Velocidade';
+    $('#btnToggle').textContent = state.playing ? '❚❚' : '▶'; $('#btnToggle').classList.toggle('on', state.playing);
+    $('#brandDot').classList.toggle('live', state.playing);
+    $('#tally').classList.toggle('on', state.playing);
+    $('#monitorWhat').textContent = !state.playing ? (state.blank ? 'Parado · texto escondido' : 'Parado') : (state.mode === 'voice' ? 'Seguindo a voz' : `Rolando a ${state.speed} px/s`) + (state.blank ? ' · texto escondido' : '');
+    speed.value = state.speed; fillRange(speed); $('#speedVal').innerHTML = `${state.speed}<small>px/s</small>`;
+    $$('#modeSeg button').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+    if (changed.mode || changed.playing || changed.voiceLang || changed.voiceSource || changed.voiceJump || changed.voiceHybrid) syncVoice();
+    if (changed.playing && state.playing) { editor.blur(); showScreen('run'); }
+    updateProgress();
+  }
+  const all = {}; Object.keys(state).forEach(k => all[k] = true);
+  render(all);
+  sc.jumpToWord(state.wordIndex || 0, true);
+  onState(changed => render(changed));
+  new ResizeObserver(() => { applyStyle(sc, state, previewScale()); if (!$('#screenEdit').hidden) applyVars(editPreview, editVars(), editScale()); }).observe(document.body);
+  setInterval(() => {
+    const on = peerAlive('prompter');
+    setLamp('#lampPrompter', on ? 'on' : '', on ? 'prompter aberto' : 'prompter fechado');
+    $('#monitorRight').textContent = on ? 'espelho do prompter' : 'prévia · prompter fechado';
+  }, 700);
+  let screen = 'run'; try { screen = localStorage.getItem('teleprompter:screen') || 'run'; } catch (e) {}
+  showScreen(screen);
+  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner };
+  bus.send({ type: 'hello', role: ROLE });
+}
+
+/* ================================================================
+   PROMPTER
+   ================================================================ */
+function initPrompter() {
+  const root = $('#prompter'); root.hidden = false; document.title = 'Teleprompter · Prompter';
+  const stage = $('#prompterStage');
+  const sc = new Scroller(stage, { isDriver: () => true, onPos: () => { sendPos(false); }, onEnd: () => { patch({ playing: false }); sendPos(true); } });
+  activeScroller = sc;
+  enableCamDrag(stage);
+  const hudPlay = $('.hud .play', stage), hudVoice = $('.hud .voice', stage), hudCtrl = $('.hud .ctrl', stage), hudPedal = $('.hud .pedal', stage);
+  hid.onStatus = (s, connected) => { hudPedal.hidden = !connected; hudPedal.textContent = connected ? 'pedal USB' : ''; showHud(2000); };
+  let hudTimer = null, cursorTimer = null;
+  function showHud(ms) { stage.classList.add('hud-on'); clearTimeout(hudTimer); hudTimer = setTimeout(() => stage.classList.remove('hud-on'), ms || 2500); }
+  function showCursor() { root.classList.remove('nocursor'); clearTimeout(cursorTimer); cursorTimer = setTimeout(() => root.classList.add('nocursor'), 2000); }
+  document.addEventListener('mousemove', () => { showCursor(); showHud(2500); });
+  stage.addEventListener('dblclick', () => toggleFullscreen());
+  document.addEventListener('keydown', () => showHud(1800));
+  document.addEventListener('fullscreenchange', () => sc.relayout(true));
+
+  const voice = new Voice({
+    getWords: () => sc.norms, getCursor: () => sc.curIdx, strong: state.voiceJump,
+    onMatch: idx => execPos({ cmd: 'voice', idx }),
+    onStatus: (s, idx) => { bus.send({ type: 'voice-status', s, idx }); renderVoice(s); },
+    onTranscript: () => {}
+  });
+  voiceEngine = voice;
+  bus.on('voice-status', m => { if (!voiceOwner()) renderVoice(m.s); });
+  function renderVoice(s) {
+    const map = { listening: ['🎤 ouvindo', 'busy'], synced: ['🎤 sincronizado', 'ok'], searching: ['🎤 procurando…', 'busy'], denied: ['🎤 sem permissão', 'bad'], unsupported: ['🎤 sem suporte', 'bad'], network: ['🎤 erro de rede', 'bad'], nomic: ['🎤 sem microfone', 'bad'], unavailable: ['🎤 indisponível', 'bad'], waiting: ['🎤 aguardando microfone', 'busy'] };
+    const on = state.mode === 'voice' && map[s]; hudVoice.hidden = !on;
+    if (on) { hudVoice.textContent = map[s][0]; hudVoice.className = 'chip voice ' + map[s][1]; }
+    if (s === 'searching' || s === 'synced') showHud(1500);
+  }
+  let voiceMine = false;
+  function syncVoice() {
+    voice.strong = state.voiceJump;
+    const mine = voiceMine = state.mode === 'voice' && state.playing && voiceOwner();
+    if (mine) voice.start(state.voiceLang); else voice.stop();
+    if (state.mode !== 'voice' || !state.playing) renderVoice('off');
+  }
+  setInterval(() => { if (state.mode === 'voice' && state.playing && (state.playing && voiceOwner()) !== voiceMine) syncVoice(); }, 700);
+  function render(changed) {
+    if (changed.script) { sc.setScript(state.script); voice.cursor = sc.curIdx; }
+    applyStyle(sc, state, 1);
+    hudPlay.textContent = (state.playing ? '▶ ' : '❚❚ ') + (state.mode === 'voice' ? 'voz' : state.speed + ' px/s');
+    hudPlay.className = 'chip play ' + (state.playing ? 'ok' : '');
+    if (changed.mode || changed.playing || changed.voiceLang || changed.voiceSource || changed.voiceJump) syncVoice();
+    if (changed.playing || changed.speed || changed.mode || changed.blank || changed.fontSize) showHud(2000);
+  }
+  const all = {}; Object.keys(state).forEach(k => all[k] = true);
+  render(all);
+  sc.jumpToWord(state.wordIndex || 0, true);
+  onState(changed => render(changed));
+  setInterval(() => { hudCtrl.hidden = peerAlive('control'); }, 700);
+  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner };
+  showHud(4000); showCursor();
+  bus.send({ type: 'hello', role: ROLE });
+}
+
+/* ================================================================
+   boot
+   ================================================================ */
+window.addEventListener('hashchange', () => location.reload());
+if (ROLE === 'prompter') initPrompter(); else initControl();
+})();
+</script>
+</body>
+</html>
