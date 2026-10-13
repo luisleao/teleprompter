@@ -22,9 +22,9 @@ O botão **Ver aqui** mostra o prompter na mesma janela; no prompter, passe o mo
 
 ## Roteiro em Markdown
 
-O botão **Exemplo** carrega um roteiro curto no estilo dos vídeos do AWS Developers LATAM (um agente com Strands Agents), com marcações de câmera, tela e corte entre colchetes.
+O botão **Exemplo** carrega um roteiro em capítulos que explica o próprio teleprompter (janelas, modos, voz, pedal, ajustes, câmera e Markdown), com marcações de câmera, tela e corte entre colchetes. Serve de teste: leia em voz alta e veja o texto acompanhar.
 
-- `# Título` vira um título de seção (os botões ◀ ▶ e as setas ← → pulam de bloco em bloco; `Shift + ←/→` pula de título em título).
+- `# Título` vira um título de seção. Títulos não são fala: ficam fora da contagem de palavras e do reconhecimento de voz, e dá para escondê-los no prompter (⚙ → Texto → Mostrar títulos de seção). Os botões ◀ ▶ e as setas ← → pulam de bloco em bloco; `Shift + ←/→` pula de seção em seção, direto para a primeira palavra falada de cada uma.
 - `[texto entre colchetes]` é uma deixa: aparece em destaque, pode ser escondida e **não entra** no reconhecimento de voz.
 - `---` marca uma pausa (três pontos no texto).
 - `**negrito**`, `*itálico*`, listas e citações (`>`) funcionam. Quebras de linha simples são mantidas.
