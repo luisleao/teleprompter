@@ -1,0 +1,168 @@
+
+<template id="stageTpl">
+  <div class="flip">
+    <div class="viewport"><div class="content"></div></div>
+    <div class="rline"></div>
+    <div class="cam" title="Arraste para posicionar a câmera"><i></i></div>
+    <div class="blankout"></div>
+    <div class="hud">
+      <span class="chip play">▶ 40</span>
+      <span class="chip voice" hidden>🎤</span>
+      <span class="chip pedal" hidden data-i18n="hud.pedal">pedal USB</span>
+      <span class="chip ctrl" hidden data-i18n="hud.noControl">sem painel de controle</span>
+      <span class="spacer"></span>
+      <span class="chip hint" data-i18n="hud.hint">F tela cheia · Espaço play · ← → blocos</span>
+      <a class="chip link" href="#control" data-i18n="hud.back">← painel</a>
+    </div>
+  </div>
+</template>
+
+<!-- ============ PAINEL DE CONTROLE ============ -->
+<div id="control" class="mode-auto" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="dot" id="brandDot"></span> Teleprompter</div>
+    <nav class="screens" id="screens">
+      <button class="scr active" data-screen="run" data-i18n="nav.control">Controle</button>
+      <button class="scr" data-screen="edit" data-i18n="nav.script">Roteiro</button>
+    </nav>
+    <span class="spacer"></span>
+    <span class="focus-warning" data-i18n-html="focus.warning">Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal</span>
+    <div class="lamps">
+      <span class="lamp" id="lampPrompter"><i></i><span class="t" data-i18n="lamp.prompterClosed">prompter fechado</span></span>
+      <span class="lamp" id="lampVoice"><i></i><span class="t">voz desligada</span></span>
+      <span class="lamp" id="lampPedal"><i></i><span class="t" data-i18n="lamp.pedalKeyboard">pedal por teclado</span></span>
+    </div>
+    <button class="btn icon-sm" id="btnSettings" data-i18n-title="btn.settings" title="Ajustes de texto, câmera, voz, pedal e teclas">⚙</button>
+    <button class="btn" id="btnPrompterHere" data-i18n="btn.here" data-i18n-title="btn.here.title" title="Mostra o prompter nesta mesma janela (tela única)">Ver aqui</button>
+    <button class="btn primary" id="btnOpenPrompter" data-i18n="btn.open" data-i18n-title="btn.open.title" title="Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)">Abrir prompter ↗</button>
+  </header>
+
+  <!-- tela: controle -->
+  <main class="screen" id="screenRun">
+    <div class="run-wrap">
+      <div class="monitor">
+        <div class="monitor-bar">
+          <span class="tally" id="tally"></span>
+          <span class="what" id="monitorWhat" data-i18n="monitor.stopped">Parado</span>
+          <span class="spacer"></span>
+          <span id="monitorRight" data-i18n="monitor.preview">prompter fechado</span>
+        </div>
+        <div class="glass"><div class="stage preview" id="previewStage"></div></div>
+        <div class="monitor-foot">
+          <input type="range" id="progress" min="0" max="1000" step="1" value="0" data-i18n-title="progress.title" title="Arraste para pular">
+          <div class="meta"><span id="progressText">—</span><span id="progressRight"></span></div>
+        </div>
+      </div>
+
+      <aside class="deck">
+        <div class="mode" id="modeSeg">
+          <button data-mode="auto"><i></i><span><span data-i18n="mode.auto">Rolagem automática</span><small data-i18n="mode.auto.sub">velocidade fixa, você controla o ritmo</small></span></button>
+          <button data-mode="voice"><i></i><span><span data-i18n="mode.voice">Seguir minha voz</span><small data-i18n="mode.voice.sub">o texto acompanha o que você fala</small></span></button>
+        </div>
+
+        <div class="transport">
+          <button class="tbtn" data-cmd="top" data-i18n-title="tr.top" title="Voltar ao início (Home)">⏮</button>
+          <button class="tbtn" data-cmd="prevBlock" data-i18n-title="tr.prev" title="Bloco anterior (←)">◀</button>
+          <button class="tbtn play" id="btnToggle" data-i18n-title="tr.toggle" title="Play / Pause (Espaço)">▶</button>
+          <button class="tbtn" data-cmd="nextBlock" data-i18n-title="tr.next" title="Próximo bloco (→)">▶</button>
+          <button class="tbtn" data-cmd="bottom" data-i18n-title="tr.bottom" title="Ir para o fim (End)">⏭</button>
+        </div>
+
+        <div class="speed-block only-auto only-hybrid">
+          <div class="head"><span class="lbl" id="speedLabel" data-i18n="speed.label">Velocidade</span><span class="readout" id="speedVal">40<small>px/s</small></span></div>
+          <div class="ctl">
+            <button class="btn small" data-act="speedDown" data-i18n-title="speed.slower" title="Mais devagar (↓)">−</button>
+            <input type="range" id="speed" min="0" max="150" step="1">
+            <button class="btn small" data-act="speedUp" data-i18n-title="speed.faster" title="Mais rápido (↑)">+</button>
+          </div>
+        </div>
+
+        <div class="voice-panel only-voice" id="voiceBox">
+          <div class="head"><span data-i18n="voice.title">Voz</span><span class="spacer"></span><span class="voice-status" id="voiceStatus">desligada</span></div>
+          <div class="transcript" id="transcript" data-i18n="voice.placeholder">Dê play para começar a ouvir.</div>
+          <p class="hint" id="voiceHint"></p>
+        </div>
+
+        <p class="keys-hint"><span class="k"><span class="kbd" data-i18n="key.space">Espaço</span> <span data-i18n="keys.playpause">play/pause</span></span><span class="k"><span class="kbd">←</span><span class="kbd">→</span> <span data-i18n="keys.blocks">blocos</span></span><span class="k"><span class="kbd">↑</span><span class="kbd">↓</span> <span data-i18n="keys.speed">velocidade</span></span><span class="k"><span class="kbd">B</span> <span data-i18n="keys.blank">esconder</span></span><span class="k"><span class="kbd">R</span> <span data-i18n="keys.reset">reiniciar</span></span></p>
+      </aside>
+    </div>
+  </main>
+
+  <!-- tela: roteiro -->
+  <main class="screen" id="screenEdit" hidden>
+    <div class="edit-wrap">
+      <section class="editor-col dropzone" id="dropzone">
+        <div class="toolbar">
+          <label class="btn quiet small"><span data-i18n="edit.open">Abrir .md</span> <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown,text/plain"></label>
+          <button class="btn quiet small" id="btnSample" data-i18n="edit.sample">Exemplo</button>
+          <button class="btn quiet small" id="btnDownload" data-i18n="edit.save">Salvar .md</button>
+          <button class="btn quiet small danger" id="btnClear" data-i18n="edit.clear">Limpar</button>
+          <span class="stats" id="scriptStats"></span>
+        </div>
+        <textarea class="editor" id="editor" spellcheck="false" data-i18n-placeholder="edit.placeholder" placeholder="Cole, digite ou arraste um arquivo .md aqui…"></textarea>
+        <p class="hint" data-i18n-html="edit.legend"><code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto</p>
+      </section>
+      <section class="rendered-col">
+        <div class="monitor"><div class="glass"><div class="stage static" id="editPreview"></div></div></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- gaveta de ajustes -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" hidden>
+    <div class="drawer-head">
+      <h2 data-i18n="drawer.title">Ajustes</h2>
+      <span class="spacer"></span>
+      <button class="btn icon-sm quiet" id="btnCloseDrawer" data-i18n-title="drawer.close" title="Fechar (Esc)">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="tabs">
+        <button class="tab active" data-tab="text" data-i18n="tab.text">Texto</button>
+        <button class="tab" data-tab="camera" data-i18n="tab.camera">Câmera</button>
+        <button class="tab" data-tab="voice" data-i18n="tab.voice">Voz</button>
+        <button class="tab" data-tab="pedal" data-i18n="tab.pedal">Pedal</button>
+        <button class="tab" data-tab="keys" data-i18n="tab.keys">Teclas</button>
+      </div>
+
+      <div class="tabpane" data-pane="text" id="paneText"></div>
+
+      <div class="tabpane" data-pane="camera" id="paneCamera" hidden>
+        <div id="cameraFields"></div>
+        <div class="row wrap">
+          <button class="btn small" id="btnCamAlign" data-i18n="cam.align">Linha de leitura na altura da câmera</button>
+        </div>
+        <p class="hint" data-i18n="cam.hint">O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.</p>
+      </div>
+
+      <div class="tabpane" data-pane="voice" id="paneVoice" hidden>
+        <div id="voiceFields"></div>
+        <p class="hint" data-i18n="voice.hint1">Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.</p>
+        <p class="hint" data-i18n="voice.hint2">O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.</p>
+      </div>
+
+      <div class="tabpane" data-pane="pedal" id="panePedal" hidden>
+        <p class="hint" data-i18n="pedal.hint1">No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.</p>
+        <div id="pedalRows"></div>
+        <div class="row wrap" style="margin-top:6px">
+          <button class="btn small" id="btnHid" data-i18n="pedal.hid.connect">Conectar pedal por USB</button>
+          <button class="btn small" id="btnHidCal" hidden data-i18n="pedal.hid.cal">Calibrar pedais</button>
+          <span class="muted small" id="hidStatus" data-i18n="pedal.hid.status">WebHID · Chrome/Edge</span>
+        </div>
+        <div class="hid-bytes" id="hidBytes"></div>
+        <p class="hint" data-i18n="pedal.hint2">Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.</p>
+      </div>
+
+      <div class="tabpane" data-pane="keys" id="paneKeys" hidden>
+        <table class="keys" id="keysTable"></table>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============ PROMPTER ============ -->
+<div id="prompter" hidden>
+  <div class="stage" id="prompterStage"></div>
+</div>
+
+<script>

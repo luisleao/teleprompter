@@ -1,0 +1,183 @@
+
+/* ================================================================
+   ações, teclado, pedal (teclas) e pedal por WebHID
+   ================================================================ */
+let activeScroller = null; // palco desta página
+let voiceEngine = null; // o reconhecedor desta página (se houver)
+function execPos(c) {
+  const sc = activeScroller; if (!sc) return;
+  const n = sc.words.length;
+  switch (c.cmd) {
+    case 'seek': case 'word': sc.jumpToWord(c.idx); break;
+    case 'nudge': sc.nudge(c.frac); break;
+    case 'prevBlock': sc.jumpBlock(-1, false); break;
+    case 'nextBlock': sc.jumpBlock(1, false); break;
+    case 'prevSection': sc.jumpBlock(-1, true); break;
+    case 'nextSection': sc.jumpBlock(1, true); break;
+    case 'top': sc.jumpToWord(0); break;
+    case 'bottom': sc.jumpToWord(Math.max(0, n - 1)); break;
+    case 'voice': sc.voiceTo(c.idx); sendPos(true); return;
+  }
+  // pulo manual: avisa o reconhecedor (daqui ou da outra janela) para recomeçar desse ponto
+  const idx = sc.wordAt(sc.target + sc.lineY);
+  sc.highlight(-1);
+  if (voiceEngine) voiceEngine.resync(idx);
+  bus.send({ type: 'resync', idx });
+  sendPos(true);
+}
+bus.on('resync', m => { if (voiceEngine) voiceEngine.resync(m.idx); });
+let lastPosSent = 0, posTimer = null;
+function sendPos(force) {
+  const sc = activeScroller; if (!sc || !isDriver()) return;
+  const now = Date.now();
+  if (!force && now - lastPosSent < 120) { if (!posTimer) posTimer = setTimeout(() => { posTimer = null; sendPos(true); }, 130); return; }
+  lastPosSent = now;
+  state.wordIndex = sc.curIdx; saveState();
+  bus.send({ type: 'pos', i: sc.curIdx, p: sc.progress(), hl: sc.hlIdx, rem: sc.remaining() });
+}
+
+const ACTIONS = {
+  toggle: ['act.toggle', () => patch({ playing: !state.playing })],
+  play: ['act.play', () => patch({ playing: true })],
+  pause: ['act.pause', () => patch({ playing: false })],
+  speedUp: ['act.speedUp', () => patch({ speed: clamp(state.speed + 5, 0, 150) })],
+  speedDown: ['act.speedDown', () => patch({ speed: clamp(state.speed - 5, 0, 150) })],
+  prevBlock: ['act.prevBlock', () => dispatchPos({ cmd: 'prevBlock' })],
+  nextBlock: ['act.nextBlock', () => dispatchPos({ cmd: 'nextBlock' })],
+  prevSection: ['act.prevSection', () => dispatchPos({ cmd: 'prevSection' })],
+  nextSection: ['act.nextSection', () => dispatchPos({ cmd: 'nextSection' })],
+  nudgeBack: ['act.nudgeBack', () => dispatchPos({ cmd: 'nudge', frac: -0.5 })],
+  nudgeFwd: ['act.nudgeFwd', () => dispatchPos({ cmd: 'nudge', frac: 0.5 })],
+  top: ['act.top', () => dispatchPos({ cmd: 'top' })],
+  bottom: ['act.bottom', () => dispatchPos({ cmd: 'bottom' })],
+  reset: ['act.reset', () => { patch({ playing: false }); dispatchPos({ cmd: 'top' }); }],
+  voice: ['act.voice', () => patch({ mode: state.mode === 'voice' ? 'auto' : 'voice' })],
+  blank: ['act.blank', () => patch({ blank: !state.blank })],
+  fontUp: ['act.fontUp', () => patch({ fontSize: clamp(state.fontSize + 4, 20, 160) })],
+  fontDown: ['act.fontDown', () => patch({ fontSize: clamp(state.fontSize - 4, 20, 160) })],
+  mirrorH: ['act.mirrorH', () => patch({ mirrorH: !state.mirrorH })],
+  mirrorV: ['act.mirrorV', () => patch({ mirrorV: !state.mirrorV })],
+  fullscreen: ['act.fullscreen', () => toggleFullscreen()],
+};
+const runAction = name => { const a = ACTIONS[name]; if (a) a[1](); };
+const KEYMAP = [
+  ['Space', 'toggle'], ['ArrowUp', 'speedUp'], ['ArrowDown', 'speedDown'], ['ArrowLeft', 'prevBlock'], ['ArrowRight', 'nextBlock'],
+  ['Shift+ArrowLeft', 'prevSection'], ['Shift+ArrowRight', 'nextSection'], ['PageUp', 'nudgeBack'], ['PageDown', 'nudgeFwd'],
+  ['Home', 'top'], ['End', 'bottom'], ['R', 'reset'], ['V', 'voice'], ['B', 'blank'], ['+', 'fontUp'], ['-', 'fontDown'],
+  ['M', 'mirrorH'], ['Shift+M', 'mirrorV'], ['F', 'fullscreen'], ['Escape', 'pause'],
+];
+const keyMap = new Map(KEYMAP);
+function keyName(e) {
+  let k = e.key;
+  if (k === ' ' || e.code === 'Space') k = 'Space';
+  else if (k === '=' ) k = '+';
+  else if (k.length === 1) k = k.toUpperCase();
+  if (e.shiftKey && k.length > 1 && k !== 'Shift') k = 'Shift+' + k;
+  if (e.shiftKey && k === 'M') k = 'Shift+M';
+  return k;
+}
+function toggleFullscreen() {
+  if (ROLE !== 'prompter') return;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else document.documentElement.requestFullscreen().catch(() => {});
+}
+/* ações que fazem sentido repetir enquanto a tecla ou o pedal fica pressionado */
+const REPEATABLE = new Set(['prevBlock', 'nextBlock', 'prevSection', 'nextSection', 'speedUp', 'speedDown', 'nudgeBack', 'nudgeFwd', 'fontUp', 'fontDown']);
+const REPEAT_DELAY = 450, REPEAT_EVERY = 150;
+let lastKeyRepeat = 0;
+document.addEventListener('keydown', e => {
+  const t = e.target; const tag = (t && t.tagName || '').toLowerCase();
+  const typing = tag === 'textarea' || tag === 'select' || (tag === 'input' && !['range', 'checkbox', 'color', 'file', 'button'].includes(t.type));
+  const k = keyName(e);
+  const pedalIdx = state.pedal.keys.indexOf(k);
+  let act = null;
+  if (pedalIdx >= 0 && (!typing || /^F\d+$/.test(k))) act = state.pedal.actions[pedalIdx];
+  else {
+    if (typing) { if (k === 'Escape') t.blur(); return; }
+    if (tag === 'input' && t.type === 'range' && /Arrow|Home|End|Page/.test(k)) return; // deixa o slider cuidar
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    act = keyMap.get(k);
+  }
+  if (!act) return;
+  e.preventDefault();
+  if (e.repeat) { // tecla segurada: só repete o que faz sentido, e não mais rápido que o pedal
+    if (!REPEATABLE.has(act)) return;
+    const now = Date.now(); if (now - lastKeyRepeat < REPEAT_EVERY) return; lastKeyRepeat = now;
+  }
+  runAction(act);
+});
+/* botões e sliders não ficam com o foco, para o Espaço/setas do pedal não baterem neles */
+document.addEventListener('click', e => { const b = e.target.closest('button, label.btn'); if (b && b.blur) b.blur(); });
+document.addEventListener('change', e => { const el = e.target; if (el.matches('input[type=range], select, input[type=checkbox], input[type=color]')) el.blur(); });
+
+/* ---- pedal por WebHID (Stream Deck Pedal: vendor 0x0fd9) ---- */
+const hid = {
+  device: null, prev: null, calibrating: -1, onStatus: null, onBytes: null, timers: [null, null, null], busy: false, listening: false,
+  available() { return !!navigator.hid; },
+  /* quem fica com o pedal: o painel de controle; o prompter só quando está sozinho (tela única) */
+  shouldOwn() { return ROLE === 'control' || !peerAlive('control'); },
+  async connect(prompt) {
+    if (!this.available()) { this.status(t('hid.unavailable')); return false; }
+    try {
+      let dev = null;
+      if (!prompt) { const list = await navigator.hid.getDevices(); dev = list.find(d => d.vendorId === 0x0fd9) || null; }
+      if (!dev && prompt) { const picked = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0fd9 }] }); dev = picked && picked[0]; }
+      if (!dev) { if (prompt) this.status(t('hid.none')); return false; }
+      if (!dev.opened) await dev.open();
+      this.device = dev; this.prev = null;
+      dev.addEventListener('inputreport', e => this.onReport(e));
+      if (!this.listening) { this.listening = true; navigator.hid.addEventListener('disconnect', ev => { if (ev.device === this.device) { this.device = null; [0, 1, 2].forEach(p => this.release(p)); this.status(t('hid.disconnected')); } }); }
+      this.status(t('hid.connected', { name: dev.productName || t('hid.default') }));
+      return true;
+    } catch (err) { if (prompt) this.status(t('hid.failed', { err: err.message || err })); return false; }
+  },
+  async disconnect(why) {
+    const d = this.device; if (!d) return; this.device = null; [0, 1, 2].forEach(p => this.release(p));
+    try { await d.close(); } catch (e) {}
+    this.status(why || t('hid.disconnected'));
+  },
+  /* a cada segundo: conecta se este for o dono e ainda não tiver o pedal; solta se a outra janela assumiu */
+  async tick() {
+    if (!this.available() || !state.hid.auto || this.busy) return;
+    this.busy = true;
+    try {
+      const own = this.shouldOwn();
+      if (own && !this.device) await this.connect(false);
+      else if (!own && this.device) await this.disconnect(t('hid.handoff'));
+    } finally { this.busy = false; }
+  },
+  status(s) { if (this.onStatus) this.onStatus(s, !!this.device); },
+  onReport(e) {
+    if (!this.shouldOwn()) return; // a outra janela é quem responde ao pedal
+    const d = e.data; const bytes = new Array(d.byteLength); for (let i = 0; i < d.byteLength; i++) bytes[i] = d.getUint8(i);
+    if (this.onBytes) this.onBytes(bytes);
+    const prev = this.prev;
+    if (this.calibrating >= 0) {
+      const idx = bytes.findIndex((b, i) => b && !(prev && prev[i]));
+      if (idx >= 0) {
+        const offs = state.hid.offsets.slice(); offs[this.calibrating] = idx;
+        patch({ hid: Object.assign({}, state.hid, { offsets: offs }) });
+        this.calibrating++;
+        if (this.calibrating > 2) { this.calibrating = -1; this.status(t('hid.calibrated', { bytes: offs.join(', ') })); }
+        else this.status(t('hid.calibrating', { pedal: t(['pedal.left', 'pedal.center', 'pedal.right'][this.calibrating]).toLowerCase() }));
+      }
+    } else if (prev) {
+      state.hid.offsets.forEach((o, p) => {
+        const down = !!bytes[o], was = !!prev[o];
+        if (down && !was) this.press(p); else if (!down && was) this.release(p);
+      });
+    }
+    this.prev = bytes;
+  },
+  /* pedal pressionado: executa já e, se segurar, repete como uma tecla */
+  press(p) {
+    this.release(p);
+    const act = state.pedal.actions[p]; runAction(act);
+    if (!REPEATABLE.has(act)) return;
+    this.timers[p] = setTimeout(() => { this.timers[p] = setInterval(() => runAction(state.pedal.actions[p]), REPEAT_EVERY); }, REPEAT_DELAY);
+  },
+  release(p) { const t = this.timers[p]; if (t != null) { clearTimeout(t); clearInterval(t); this.timers[p] = null; } },
+  calibrate() { if (!this.device) return; this.calibrating = 0; this.status(t('hid.calibrating', { pedal: t('pedal.left').toLowerCase() })); }
+};
+
+setInterval(() => hid.tick(), 1200);

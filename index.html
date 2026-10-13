@@ -271,11 +271,11 @@ textarea.editor:focus { border-color: var(--amber); }
     <div class="hud">
       <span class="chip play">▶ 40</span>
       <span class="chip voice" hidden>🎤</span>
-      <span class="chip pedal" hidden>pedal USB</span>
-      <span class="chip ctrl" hidden>sem painel de controle</span>
+      <span class="chip pedal" hidden data-i18n="hud.pedal">pedal USB</span>
+      <span class="chip ctrl" hidden data-i18n="hud.noControl">sem painel de controle</span>
       <span class="spacer"></span>
-      <span class="chip hint">F tela cheia · Espaço play · ← → blocos</span>
-      <a class="chip link" href="#control">← painel</a>
+      <span class="chip hint" data-i18n="hud.hint">F tela cheia · Espaço play · ← → blocos</span>
+      <a class="chip link" href="#control" data-i18n="hud.back">← painel</a>
     </div>
   </div>
 </template>
@@ -285,19 +285,19 @@ textarea.editor:focus { border-color: var(--amber); }
   <header class="topbar">
     <div class="brand"><span class="dot" id="brandDot"></span> Teleprompter</div>
     <nav class="screens" id="screens">
-      <button class="scr active" data-screen="run">Controle</button>
-      <button class="scr" data-screen="edit">Roteiro</button>
+      <button class="scr active" data-screen="run" data-i18n="nav.control">Controle</button>
+      <button class="scr" data-screen="edit" data-i18n="nav.script">Roteiro</button>
     </nav>
     <span class="spacer"></span>
-    <span class="focus-warning">Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal</span>
+    <span class="focus-warning" data-i18n-html="focus.warning">Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal</span>
     <div class="lamps">
-      <span class="lamp" id="lampPrompter"><i></i><span class="t">prompter fechado</span></span>
+      <span class="lamp" id="lampPrompter"><i></i><span class="t" data-i18n="lamp.prompterClosed">prompter fechado</span></span>
       <span class="lamp" id="lampVoice"><i></i><span class="t">voz desligada</span></span>
-      <span class="lamp" id="lampPedal"><i></i><span class="t">pedal por teclado</span></span>
+      <span class="lamp" id="lampPedal"><i></i><span class="t" data-i18n="lamp.pedalKeyboard">pedal por teclado</span></span>
     </div>
-    <button class="btn icon-sm" id="btnSettings" title="Ajustes de texto, câmera, voz, pedal e teclas">⚙</button>
-    <button class="btn" id="btnPrompterHere" title="Mostra o prompter nesta mesma janela (tela única)">Ver aqui</button>
-    <button class="btn primary" id="btnOpenPrompter" title="Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)">Abrir prompter ↗</button>
+    <button class="btn icon-sm" id="btnSettings" data-i18n-title="btn.settings" title="Ajustes de texto, câmera, voz, pedal e teclas">⚙</button>
+    <button class="btn" id="btnPrompterHere" data-i18n="btn.here" data-i18n-title="btn.here.title" title="Mostra o prompter nesta mesma janela (tela única)">Ver aqui</button>
+    <button class="btn primary" id="btnOpenPrompter" data-i18n="btn.open" data-i18n-title="btn.open.title" title="Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)">Abrir prompter ↗</button>
   </header>
 
   <!-- tela: controle -->
@@ -306,47 +306,47 @@ textarea.editor:focus { border-color: var(--amber); }
       <div class="monitor">
         <div class="monitor-bar">
           <span class="tally" id="tally"></span>
-          <span class="what" id="monitorWhat">Parado</span>
+          <span class="what" id="monitorWhat" data-i18n="monitor.stopped">Parado</span>
           <span class="spacer"></span>
-          <span id="monitorRight">prompter fechado</span>
+          <span id="monitorRight" data-i18n="monitor.preview">prompter fechado</span>
         </div>
         <div class="glass"><div class="stage preview" id="previewStage"></div></div>
         <div class="monitor-foot">
-          <input type="range" id="progress" min="0" max="1000" step="1" value="0" title="Arraste para pular">
+          <input type="range" id="progress" min="0" max="1000" step="1" value="0" data-i18n-title="progress.title" title="Arraste para pular">
           <div class="meta"><span id="progressText">—</span><span id="progressRight"></span></div>
         </div>
       </div>
 
       <aside class="deck">
         <div class="mode" id="modeSeg">
-          <button data-mode="auto"><i></i><span>Rolagem automática<small>velocidade fixa, você controla o ritmo</small></span></button>
-          <button data-mode="voice"><i></i><span>Seguir minha voz<small>o texto acompanha o que você fala</small></span></button>
+          <button data-mode="auto"><i></i><span><span data-i18n="mode.auto">Rolagem automática</span><small data-i18n="mode.auto.sub">velocidade fixa, você controla o ritmo</small></span></button>
+          <button data-mode="voice"><i></i><span><span data-i18n="mode.voice">Seguir minha voz</span><small data-i18n="mode.voice.sub">o texto acompanha o que você fala</small></span></button>
         </div>
 
         <div class="transport">
-          <button class="tbtn" data-cmd="top" title="Voltar ao início (Home)">⏮</button>
-          <button class="tbtn" data-cmd="prevBlock" title="Bloco anterior (←)">◀</button>
-          <button class="tbtn play" id="btnToggle" title="Play / Pause (Espaço)">▶</button>
-          <button class="tbtn" data-cmd="nextBlock" title="Próximo bloco (→)">▶</button>
-          <button class="tbtn" data-cmd="bottom" title="Ir para o fim (End)">⏭</button>
+          <button class="tbtn" data-cmd="top" data-i18n-title="tr.top" title="Voltar ao início (Home)">⏮</button>
+          <button class="tbtn" data-cmd="prevBlock" data-i18n-title="tr.prev" title="Bloco anterior (←)">◀</button>
+          <button class="tbtn play" id="btnToggle" data-i18n-title="tr.toggle" title="Play / Pause (Espaço)">▶</button>
+          <button class="tbtn" data-cmd="nextBlock" data-i18n-title="tr.next" title="Próximo bloco (→)">▶</button>
+          <button class="tbtn" data-cmd="bottom" data-i18n-title="tr.bottom" title="Ir para o fim (End)">⏭</button>
         </div>
 
         <div class="speed-block only-auto only-hybrid">
-          <div class="head"><span class="lbl" id="speedLabel">Velocidade</span><span class="readout" id="speedVal">40<small>px/s</small></span></div>
+          <div class="head"><span class="lbl" id="speedLabel" data-i18n="speed.label">Velocidade</span><span class="readout" id="speedVal">40<small>px/s</small></span></div>
           <div class="ctl">
-            <button class="btn small" data-act="speedDown" title="Mais devagar (↓)">−</button>
+            <button class="btn small" data-act="speedDown" data-i18n-title="speed.slower" title="Mais devagar (↓)">−</button>
             <input type="range" id="speed" min="0" max="150" step="1">
-            <button class="btn small" data-act="speedUp" title="Mais rápido (↑)">+</button>
+            <button class="btn small" data-act="speedUp" data-i18n-title="speed.faster" title="Mais rápido (↑)">+</button>
           </div>
         </div>
 
         <div class="voice-panel only-voice" id="voiceBox">
-          <div class="head"><span>Voz</span><span class="spacer"></span><span class="voice-status" id="voiceStatus">desligada</span></div>
-          <div class="transcript" id="transcript">Dê play para começar a ouvir.</div>
+          <div class="head"><span data-i18n="voice.title">Voz</span><span class="spacer"></span><span class="voice-status" id="voiceStatus">desligada</span></div>
+          <div class="transcript" id="transcript" data-i18n="voice.placeholder">Dê play para começar a ouvir.</div>
           <p class="hint" id="voiceHint"></p>
         </div>
 
-        <p class="keys-hint"><span class="k"><span class="kbd">Espaço</span> play/pause</span><span class="k"><span class="kbd">←</span><span class="kbd">→</span> blocos</span><span class="k"><span class="kbd">↑</span><span class="kbd">↓</span> velocidade</span><span class="k"><span class="kbd">B</span> esconder</span><span class="k"><span class="kbd">R</span> reiniciar</span></p>
+        <p class="keys-hint"><span class="k"><span class="kbd" data-i18n="key.space">Espaço</span> <span data-i18n="keys.playpause">play/pause</span></span><span class="k"><span class="kbd">←</span><span class="kbd">→</span> <span data-i18n="keys.blocks">blocos</span></span><span class="k"><span class="kbd">↑</span><span class="kbd">↓</span> <span data-i18n="keys.speed">velocidade</span></span><span class="k"><span class="kbd">B</span> <span data-i18n="keys.blank">esconder</span></span><span class="k"><span class="kbd">R</span> <span data-i18n="keys.reset">reiniciar</span></span></p>
       </aside>
     </div>
   </main>
@@ -356,14 +356,14 @@ textarea.editor:focus { border-color: var(--amber); }
     <div class="edit-wrap">
       <section class="editor-col dropzone" id="dropzone">
         <div class="toolbar">
-          <label class="btn quiet small">Abrir .md <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown,text/plain"></label>
-          <button class="btn quiet small" id="btnSample">Exemplo</button>
-          <button class="btn quiet small" id="btnDownload">Salvar .md</button>
-          <button class="btn quiet small danger" id="btnClear">Limpar</button>
+          <label class="btn quiet small"><span data-i18n="edit.open">Abrir .md</span> <input type="file" id="fileInput" accept=".md,.markdown,.txt,text/markdown,text/plain"></label>
+          <button class="btn quiet small" id="btnSample" data-i18n="edit.sample">Exemplo</button>
+          <button class="btn quiet small" id="btnDownload" data-i18n="edit.save">Salvar .md</button>
+          <button class="btn quiet small danger" id="btnClear" data-i18n="edit.clear">Limpar</button>
           <span class="stats" id="scriptStats"></span>
         </div>
-        <textarea class="editor" id="editor" spellcheck="false" placeholder="Cole, digite ou arraste um arquivo .md aqui…"></textarea>
-        <p class="hint"><code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto</p>
+        <textarea class="editor" id="editor" spellcheck="false" data-i18n-placeholder="edit.placeholder" placeholder="Cole, digite ou arraste um arquivo .md aqui…"></textarea>
+        <p class="hint" data-i18n-html="edit.legend"><code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto</p>
       </section>
       <section class="rendered-col">
         <div class="monitor"><div class="glass"><div class="stage static" id="editPreview"></div></div></div>
@@ -375,17 +375,17 @@ textarea.editor:focus { border-color: var(--amber); }
   <div class="scrim" id="scrim" hidden></div>
   <aside class="drawer" id="drawer" hidden>
     <div class="drawer-head">
-      <h2>Ajustes</h2>
+      <h2 data-i18n="drawer.title">Ajustes</h2>
       <span class="spacer"></span>
-      <button class="btn icon-sm quiet" id="btnCloseDrawer" title="Fechar (Esc)">×</button>
+      <button class="btn icon-sm quiet" id="btnCloseDrawer" data-i18n-title="drawer.close" title="Fechar (Esc)">×</button>
     </div>
     <div class="drawer-body">
       <div class="tabs">
-        <button class="tab active" data-tab="text">Texto</button>
-        <button class="tab" data-tab="camera">Câmera</button>
-        <button class="tab" data-tab="voice">Voz</button>
-        <button class="tab" data-tab="pedal">Pedal</button>
-        <button class="tab" data-tab="keys">Teclas</button>
+        <button class="tab active" data-tab="text" data-i18n="tab.text">Texto</button>
+        <button class="tab" data-tab="camera" data-i18n="tab.camera">Câmera</button>
+        <button class="tab" data-tab="voice" data-i18n="tab.voice">Voz</button>
+        <button class="tab" data-tab="pedal" data-i18n="tab.pedal">Pedal</button>
+        <button class="tab" data-tab="keys" data-i18n="tab.keys">Teclas</button>
       </div>
 
       <div class="tabpane" data-pane="text" id="paneText"></div>
@@ -393,27 +393,27 @@ textarea.editor:focus { border-color: var(--amber); }
       <div class="tabpane" data-pane="camera" id="paneCamera" hidden>
         <div id="cameraFields"></div>
         <div class="row wrap">
-          <button class="btn small" id="btnCamAlign">Linha de leitura na altura da câmera</button>
+          <button class="btn small" id="btnCamAlign" data-i18n="cam.align">Linha de leitura na altura da câmera</button>
         </div>
-        <p class="hint">O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.</p>
+        <p class="hint" data-i18n="cam.hint">O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.</p>
       </div>
 
       <div class="tabpane" data-pane="voice" id="paneVoice" hidden>
         <div id="voiceFields"></div>
-        <p class="hint">Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.</p>
-        <p class="hint">O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.</p>
+        <p class="hint" data-i18n="voice.hint1">Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.</p>
+        <p class="hint" data-i18n="voice.hint2">O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.</p>
       </div>
 
       <div class="tabpane" data-pane="pedal" id="panePedal" hidden>
-        <p class="hint">No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.</p>
+        <p class="hint" data-i18n="pedal.hint1">No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.</p>
         <div id="pedalRows"></div>
         <div class="row wrap" style="margin-top:6px">
-          <button class="btn small" id="btnHid">Conectar pedal por USB</button>
-          <button class="btn small" id="btnHidCal" hidden>Calibrar pedais</button>
-          <span class="muted small" id="hidStatus">WebHID · Chrome/Edge</span>
+          <button class="btn small" id="btnHid" data-i18n="pedal.hid.connect">Conectar pedal por USB</button>
+          <button class="btn small" id="btnHidCal" hidden data-i18n="pedal.hid.cal">Calibrar pedais</button>
+          <span class="muted small" id="hidStatus" data-i18n="pedal.hid.status">WebHID · Chrome/Edge</span>
         </div>
         <div class="hid-bytes" id="hidBytes"></div>
-        <p class="hint">Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.</p>
+        <p class="hint" data-i18n="pedal.hint2">Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.</p>
       </div>
 
       <div class="tabpane" data-pane="keys" id="paneKeys" hidden>
@@ -551,83 +551,11 @@ const bus = (() => {
 /* ================================================================
    estado compartilhado
    ================================================================ */
-const SAMPLE = `# Abertura
-
-[CÂMERA · PLANO MÉDIO]
-
-Fala, pessoal! Este texto que você está lendo agora está rolando em um teleprompter feito com uma página HTML só. Nada de instalar programa: é abrir o arquivo no navegador e gravar.
-
-Neste roteiro a gente passa por tudo o que dá para configurar e conectar. Pode usar como teste: leia em voz alta e veja o texto acompanhar.
-
----
-
-# Duas janelas, uma página
-
-[TELA: painel de controle]
-
-O mesmo arquivo abre de dois jeitos. Sem nada no fim do endereço, é o painel de controle. Com \`#prompter\` no final, é a tela que vai para o Elgato Prompter. As duas conversam pelo próprio navegador, então o que você muda no painel aparece no prompter na hora.
-
-Para começar, clique em "Abrir prompter". Arraste a janela nova para a tela do Prompter e aperte F para tela cheia. Se o texto aparecer invertido no vidro, marque "Espelhar" nos ajustes.
-
-# Rolagem automática
-
-[TELA: mesa de controle, velocidade]
-
-No modo automático o texto desce em velocidade fixa. Espaço dá play e pause. As setas para cima e para baixo mudam a velocidade, e as setas para os lados pulam de bloco em bloco. Chegou no fim? Play de novo recomeça do início.
-
-# Seguir a voz
-
-[TELA: painel com a transcrição aparecendo]
-
-Agora o modo que a gente mais usa. Escolha "Seguir minha voz" e dê play. O navegador pede permissão para o microfone e o texto passa a acompanhar o que você fala.
-
-Se eu pular uma frase inteira, ele procura onde eu estou e segue dali. Se eu parar para improvisar, ele espera. E se eu voltar para reler um trecho, ele volta junto.
-
-[PAUSA · IMPROVISE UMA FRASE FORA DO ROTEIRO]
-
-Viu? Parou de rolar enquanto eu saí do texto e retomou quando eu voltei.
-
-# O pedal
-
-[TELA: ajustes, aba Pedal]
-
-Com o Stream Deck Pedal, as mãos ficam livres. No app Stream Deck, cada pedal manda uma tecla: seta para a esquerda, Espaço e seta para a direita. Nos ajustes, dá para trocar a ação de cada pedal e gravar outras teclas.
-
-Também dá para conectar o pedal direto por USB, pelo WebHID do Chrome. Aí segurar o pedal repete a ação, como uma tecla segurada, até chegar no início ou no fim.
-
-# Texto e cores
-
-[TELA: gaveta de ajustes, aba Texto]
-
-Nos ajustes, mude tamanho e fonte, largura do texto, posição da linha de leitura, cores do texto, do fundo e das deixas, e o esmaecer fora da linha. Tudo muda na prévia e no prompter ao mesmo tempo.
-
-# Marcador da câmera
-
-[TELA: mira vermelha na prévia]
-
-O marcador mostra onde está a lente atrás do vidro. Ligue na aba Câmera, escolha mira, anel ou ponto, e arraste até a posição certa. O botão "Linha de leitura na altura da câmera" alinha as duas, para os olhos ficarem na lente enquanto você lê.
-
-# O roteiro em Markdown
-
-[TELA: tela Roteiro, editor e prévia]
-
-O texto é um arquivo Markdown comum. O jogo da velha vira título de seção, como estes capítulos: o prompter mostra, mas a voz não espera por eles. Texto entre colchetes vira uma deixa, como as marcações de tela deste roteiro: aparece em destaque e também fica fora da fala. Três traços marcam uma pausa, e comentários HTML somem do prompter.
-
-Para trazer um roteiro pronto, arraste o arquivo .md para o editor. Para guardar, use "Salvar .md".
-
-# Encerramento
-
-[CÂMERA · PLANO MÉDIO]
-
-Peraí, isso dá pra fazer com uma página HTML? Dá. E está pronto para o próximo vídeo.
-
-Ficou com dúvida? Deixa nos comentários. Até a próxima!
-
-[SORRIR · CORTE FINAL]
-`;
+/* roteiros de exemplo embutidos (reserva para quando a página abre por file://) */
+const SAMPLES = {"pt": "# Abertura\n\n[CÂMERA · PLANO MÉDIO]\n\nFala, pessoal! Este texto que você está lendo agora está rolando em um teleprompter feito com uma página HTML só. Nada de instalar programa: é abrir o arquivo no navegador e gravar.\n\nNeste roteiro a gente passa por tudo o que dá para configurar e conectar. Pode usar como teste: leia em voz alta e veja o texto acompanhar.\n\n---\n\n# Duas janelas, uma página\n\n[TELA: painel de controle]\n\nO mesmo arquivo abre de dois jeitos. Sem nada no fim do endereço, é o painel de controle. Com `#prompter` no final, é a tela que vai para o Elgato Prompter. As duas conversam pelo próprio navegador, então o que você muda no painel aparece no prompter na hora.\n\nPara começar, clique em \"Abrir prompter\". Arraste a janela nova para a tela do Prompter e aperte F para tela cheia. Se o texto aparecer invertido no vidro, marque \"Espelhar\" nos ajustes.\n\n# Rolagem automática\n\n[TELA: mesa de controle, velocidade]\n\nNo modo automático o texto desce em velocidade fixa. Espaço dá play e pause. As setas para cima e para baixo mudam a velocidade, e as setas para os lados pulam de bloco em bloco. Chegou no fim? Play de novo recomeça do início.\n\n# Seguir a voz\n\n[TELA: painel com a transcrição aparecendo]\n\nAgora o modo que a gente mais usa. Escolha \"Seguir minha voz\" e dê play. O navegador pede permissão para o microfone e o texto passa a acompanhar o que você fala.\n\nSe eu pular uma frase inteira, ele procura onde eu estou e segue dali. Se eu parar para improvisar, ele espera. E se eu voltar para reler um trecho, ele volta junto.\n\n[PAUSA · IMPROVISE UMA FRASE FORA DO ROTEIRO]\n\nViu? Parou de rolar enquanto eu saí do texto e retomou quando eu voltei.\n\n# O pedal\n\n[TELA: ajustes, aba Pedal]\n\nCom o Stream Deck Pedal, as mãos ficam livres. No app Stream Deck, cada pedal manda uma tecla: seta para a esquerda, Espaço e seta para a direita. Nos ajustes, dá para trocar a ação de cada pedal e gravar outras teclas.\n\nTambém dá para conectar o pedal direto por USB, pelo WebHID do Chrome. Aí segurar o pedal repete a ação, como uma tecla segurada, até chegar no início ou no fim.\n\n# Texto e cores\n\n[TELA: gaveta de ajustes, aba Texto]\n\nNos ajustes, mude tamanho e fonte, largura do texto, posição da linha de leitura, cores do texto, do fundo e das deixas, e o esmaecer fora da linha. Tudo muda na prévia e no prompter ao mesmo tempo.\n\n# Marcador da câmera\n\n[TELA: mira vermelha na prévia]\n\nO marcador mostra onde está a lente atrás do vidro. Ligue na aba Câmera, escolha mira, anel ou ponto, e arraste até a posição certa. O botão \"Linha de leitura na altura da câmera\" alinha as duas, para os olhos ficarem na lente enquanto você lê.\n\n# O roteiro em Markdown\n\n[TELA: tela Roteiro, editor e prévia]\n\nO texto é um arquivo Markdown comum. O jogo da velha vira título de seção, como estes capítulos: o prompter mostra, mas a voz não espera por eles. Texto entre colchetes vira uma deixa, como as marcações de tela deste roteiro: aparece em destaque e também fica fora da fala. Três traços marcam uma pausa, e comentários HTML somem do prompter.\n\nPara trazer um roteiro pronto, arraste o arquivo .md para o editor. Para guardar, use \"Salvar .md\".\n\n# Encerramento\n\n[CÂMERA · PLANO MÉDIO]\n\nPeraí, isso dá pra fazer com uma página HTML? Dá. E está pronto para o próximo vídeo.\n\nFicou com dúvida? Deixa nos comentários. Até a próxima!\n\n[SORRIR · CORTE FINAL]\n", "en": "# Opening\n\n[CAMERA · MEDIUM SHOT]\n\nHey everyone! The text you're reading right now is scrolling on a teleprompter built from a single HTML page. Nothing to install: open the file in the browser and record.\n\nIn this script we go through everything you can set up and connect. Use it as a test: read it out loud and watch the text follow you.\n\n---\n\n# Two windows, one page\n\n[SCREEN: control panel]\n\nThe same file opens in two ways. With nothing at the end of the address, it's the control panel. With `#prompter` at the end, it's the screen that goes to the Elgato Prompter. The two talk through the browser itself, so whatever you change in the panel shows up on the prompter right away.\n\nTo get started, click \"Open prompter\". Drag the new window to the Prompter's display and press F for full screen. If the text shows up reversed on the glass, turn on \"Mirror\" in the settings.\n\n# Auto scroll\n\n[SCREEN: control deck, speed]\n\nIn auto mode the text scrolls at a fixed speed. Space plays and pauses. The up and down arrows change the speed, and the side arrows jump from block to block. Reached the end? Play again starts over from the top.\n\n# Follow my voice\n\n[SCREEN: panel with the transcript showing]\n\nNow the mode we use the most. Choose \"Follow my voice\" and press play. The browser asks for microphone permission and the text starts following what you say.\n\nIf I skip a whole sentence, it looks for where I am and carries on from there. If I stop to improvise, it waits. And if I go back to reread a passage, it goes back with me.\n\n[PAUSE · IMPROVISE A SENTENCE OFF SCRIPT]\n\nSee? It stopped scrolling while I left the text, and picked up again when I came back.\n\n# The pedal\n\n[SCREEN: settings, Pedal tab]\n\nWith the Stream Deck Pedal, your hands are free. In the Stream Deck app, each pedal sends a key: left arrow, Space and right arrow. In the settings you can change what each pedal does and record other keys.\n\nYou can also connect the pedal straight over USB, through WebHID in Chrome. Then holding the pedal repeats the action, like holding a key, all the way to the start or the end.\n\n# Text and colors\n\n[SCREEN: settings drawer, Text tab]\n\nIn the settings, change size and font, text width, the position of the reading line, the colors of the text, background and cues, and the fade away from the line. Everything changes in the preview and on the prompter at the same time.\n\n# Camera marker\n\n[SCREEN: red reticle on the preview]\n\nThe marker shows where the lens sits behind the glass. Turn it on in the Camera tab, pick reticle, ring or dot, and drag it into place. The \"Reading line at camera height\" button lines the two up, so your eyes stay on the lens while you read.\n\n# The script in Markdown\n\n[SCREEN: Script screen, editor and preview]\n\nThe text is a plain Markdown file. A hash sign becomes a section title, like these chapters: the prompter shows them, but the voice doesn't wait for them. Text in square brackets becomes a cue, like the screen notes in this script: it stands out and also stays out of the speech. Three dashes mark a pause, and HTML comments disappear from the prompter.\n\nTo bring in a script you already have, drag the .md file onto the editor. To keep it, use \"Save .md\".\n\n# Closing\n\n[CAMERA · MEDIUM SHOT]\n\nWait, you can do this with one HTML page? You can. And it's ready for the next video.\n\nStill got questions? Leave them in the comments. See you next time!\n\n[SMILE · FINAL CUT]\n", "es": "# Apertura\n\n[CÁMARA · PLANO MEDIO]\n\n¡Hola a todos! El texto que estás leyendo ahora está corriendo en un teleprompter hecho con una sola página HTML. Nada que instalar: abres el archivo en el navegador y grabas.\n\nEn este guion repasamos todo lo que se puede configurar y conectar. Úsalo como prueba: léelo en voz alta y mira cómo el texto te sigue.\n\n---\n\n# Dos ventanas, una página\n\n[PANTALLA: panel de control]\n\nEl mismo archivo se abre de dos formas. Sin nada al final de la dirección, es el panel de control. Con `#prompter` al final, es la pantalla que va al Elgato Prompter. Las dos se comunican por el propio navegador, así que lo que cambias en el panel aparece en el prompter al instante.\n\nPara empezar, haz clic en \"Abrir prompter\". Arrastra la ventana nueva a la pantalla del Prompter y pulsa F para pantalla completa. Si el texto sale invertido en el cristal, activa \"Espejo\" en los ajustes.\n\n# Desplazamiento automático\n\n[PANTALLA: mesa de control, velocidad]\n\nEn el modo automático el texto baja a velocidad fija. Espacio reproduce y pausa. Las flechas arriba y abajo cambian la velocidad, y las flechas laterales saltan de bloque en bloque. ¿Llegaste al final? Play otra vez empieza desde el principio.\n\n# Seguir mi voz\n\n[PANTALLA: panel con la transcripción apareciendo]\n\nAhora el modo que más usamos. Elige \"Seguir mi voz\" y dale play. El navegador pide permiso para el micrófono y el texto empieza a seguir lo que dices.\n\nSi me salto una frase entera, busca dónde estoy y sigue desde ahí. Si me detengo a improvisar, espera. Y si vuelvo para releer un fragmento, vuelve conmigo.\n\n[PAUSA · IMPROVISA UNA FRASE FUERA DEL GUION]\n\n¿Viste? Dejó de desplazarse mientras me salí del texto y retomó cuando volví.\n\n# El pedal\n\n[PANTALLA: ajustes, pestaña Pedal]\n\nCon el Stream Deck Pedal, las manos quedan libres. En la app Stream Deck, cada pedal envía una tecla: flecha izquierda, Espacio y flecha derecha. En los ajustes puedes cambiar la acción de cada pedal y grabar otras teclas.\n\nTambién puedes conectar el pedal directo por USB, con WebHID en Chrome. Así, mantener el pedal pulsado repite la acción, como una tecla mantenida, hasta llegar al principio o al final.\n\n# Texto y colores\n\n[PANTALLA: panel de ajustes, pestaña Texto]\n\nEn los ajustes, cambia tamaño y fuente, ancho del texto, posición de la línea de lectura, colores del texto, del fondo y de las acotaciones, y el desvanecido fuera de la línea. Todo cambia en la vista previa y en el prompter al mismo tiempo.\n\n# Marcador de cámara\n\n[PANTALLA: mira roja en la vista previa]\n\nEl marcador muestra dónde está la lente detrás del cristal. Actívalo en la pestaña Cámara, elige mira, anillo o punto, y arrástralo hasta la posición correcta. El botón \"Línea de lectura a la altura de la cámara\" alinea las dos, para que los ojos queden en la lente mientras lees.\n\n# El guion en Markdown\n\n[PANTALLA: pantalla Guion, editor y vista previa]\n\nEl texto es un archivo Markdown normal. La almohadilla se convierte en título de sección, como estos capítulos: el prompter los muestra, pero la voz no los espera. El texto entre corchetes se convierte en una acotación, como las marcas de pantalla de este guion: se destaca y también queda fuera del habla. Tres guiones marcan una pausa, y los comentarios HTML desaparecen del prompter.\n\nPara traer un guion que ya tienes, arrastra el archivo .md al editor. Para guardarlo, usa \"Guardar .md\".\n\n# Cierre\n\n[CÁMARA · PLANO MEDIO]\n\nEspera, ¿esto se puede hacer con una página HTML? Se puede. Y está listo para el próximo video.\n\n¿Te quedaron dudas? Déjalas en los comentarios. ¡Hasta la próxima!\n\n[SONREÍR · CORTE FINAL]\n"};
 
 const DEFAULTS = {
-  script: SAMPLE,
+  script: '', uiLang: 'auto',
   playing: false, speed: 40, mode: 'auto', blank: false, wordIndex: 0,
   voiceLang: 'pt-BR', voiceSource: 'control', voiceLookahead: 2, voiceJump: 7, voiceHybrid: false,
   fontSize: 56, lineHeight: 1.35, fontWeight: '500', fontFamily: 'sans', width: 90, align: 'left', readingLine: 35,
@@ -640,15 +568,18 @@ const DEFAULTS = {
 const FONTS = { sans: 'var(--font)', serif: 'Georgia, "Times New Roman", serif', mono: 'var(--mono)', rounded: '"SF Pro Rounded", "Nunito", "Arial Rounded MT Bold", var(--font)' };
 const LS_KEY = 'teleprompter:state';
 
+let FRESH = false; // primeira abertura: sem nada salvo ainda
 let state = loadState();
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
     if (s && typeof s === 'object') return Object.assign({}, DEFAULTS, s, { playing: false, pedal: Object.assign({}, DEFAULTS.pedal, s.pedal || {}), hid: Object.assign({}, DEFAULTS.hid, s.hid || {}) });
   } catch (e) {}
+  FRESH = true;
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
-const saveState = debounce(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({}, state, { playing: false }))); } catch (e) {} }, 300);
+const saveStateNow = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({}, state, { playing: false }))); } catch (e) {} };
+const saveState = debounce(saveStateNow, 300);
 
 const listeners = [];
 const onState = fn => listeners.push(fn);
@@ -681,6 +612,185 @@ function dispatchPos(cmd) { if (isDriver()) execPos(cmd); else bus.send(Object.a
 bus.on('cmd', m => { if (isDriver()) execPos(m); });
 
 /* ================================================================
+   idiomas: português, inglês e espanhol
+   ================================================================ */
+const I18N = {
+pt: {
+  'nav.control': 'Controle', 'nav.script': 'Roteiro',
+  'focus.warning': 'Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal',
+  'lamp.prompterOpen': 'prompter aberto', 'lamp.prompterClosed': 'prompter fechado', 'lamp.voice': 'voz', 'lamp.pedalKeyboard': 'pedal por teclado', 'lamp.pedalUsb': 'pedal por USB',
+  'btn.settings': 'Ajustes de texto, câmera, voz, pedal e teclas', 'btn.here': 'Ver aqui', 'btn.here.title': 'Mostra o prompter nesta mesma janela (tela única)',
+  'btn.open': 'Abrir prompter ↗', 'btn.open.title': 'Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)',
+  'monitor.stopped': 'Parado', 'monitor.rolling': 'Rolando a {speed} px/s', 'monitor.voice': 'Seguindo a voz', 'monitor.blank': 'texto escondido', 'monitor.mirror': 'espelho do prompter', 'monitor.preview': 'prévia · prompter fechado',
+  'progress.none': 'Sem roteiro', 'progress.text': '{pct}% · palavra {i} de {n}', 'progress.remaining': 'faltam {t}', 'progress.estimate': '{t} a 150 ppm', 'progress.title': 'Arraste para pular',
+  'mode.auto': 'Rolagem automática', 'mode.auto.sub': 'velocidade fixa, você controla o ritmo', 'mode.voice': 'Seguir minha voz', 'mode.voice.sub': 'o texto acompanha o que você fala',
+  'tr.top': 'Voltar ao início (Home)', 'tr.prev': 'Bloco anterior (←)', 'tr.toggle': 'Play / Pause (Espaço)', 'tr.next': 'Próximo bloco (→)', 'tr.bottom': 'Ir para o fim (End)',
+  'speed.label': 'Velocidade', 'speed.reserve': 'Rolagem de reserva', 'speed.slower': 'Mais devagar (↓)', 'speed.faster': 'Mais rápido (↑)',
+  'voice.title': 'Voz', 'voice.placeholder': 'Dê play (ou use o pedal) para começar a ouvir.',
+  'voice.hint.default': 'Se você improvisar, o texto espera. Ao voltar ao roteiro, ele reencontra o ponto.', 'voice.hint.hybrid': 'Sem voz por alguns segundos, o texto continua na rolagem de reserva.', 'voice.hint.remote': 'O microfone está na janela do prompter.',
+  'keys.playpause': 'play/pause', 'keys.blocks': 'blocos', 'keys.speed': 'velocidade', 'keys.blank': 'esconder', 'keys.reset': 'reiniciar',
+  'edit.open': 'Abrir .md', 'edit.sample': 'Exemplo', 'edit.save': 'Salvar .md', 'edit.clear': 'Limpar', 'edit.placeholder': 'Cole, digite ou arraste um arquivo .md aqui…',
+  'edit.legend': '<code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto',
+  'edit.stats': '{n} palavras · {t} a 150 ppm', 'edit.confirmClear': 'Limpar o roteiro?', 'edit.file': 'roteiro.md',
+  'drawer.title': 'Ajustes', 'drawer.close': 'Fechar (Esc)', 'tab.text': 'Texto', 'tab.camera': 'Câmera', 'tab.voice': 'Voz', 'tab.pedal': 'Pedal', 'tab.keys': 'Teclas',
+  'f.uiLang': 'Idioma da interface', 'opt.lang.auto': 'Automático (do navegador)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Tamanho da fonte', 'f.lineHeight': 'Altura da linha', 'f.width': 'Largura do texto', 'f.readingLine': 'Posição da linha de leitura', 'f.fontFamily': 'Fonte', 'f.fontWeight': 'Peso', 'f.align': 'Alinhamento',
+  'f.colorText': 'Cor do texto', 'f.colorBg': 'Cor de fundo', 'f.colorAccent': 'Destaque e linha de leitura', 'f.colorCue': 'Cor das deixas',
+  'f.showReadingLine': 'Mostrar linha de leitura', 'f.fade': 'Esmaecer longe da linha', 'f.highlightWord': 'Marcar a palavra reconhecida (voz)', 'f.showCues': 'Mostrar deixas [entre colchetes]', 'f.showHeadings': 'Mostrar títulos de seção', 'f.mirrorH': 'Espelhar na horizontal', 'f.mirrorV': 'Espelhar na vertical',
+  'opt.font.sans': 'Sans (sistema)', 'opt.font.rounded': 'Arredondada', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Normal', 'opt.weight.500': 'Médio', 'opt.weight.600': 'Semi-negrito', 'opt.weight.700': 'Negrito', 'opt.align.left': 'Esquerda', 'opt.align.center': 'Centro',
+  'f.camera': 'Mostrar marcador da câmera', 'f.cameraStyle': 'Estilo', 'f.cameraX': 'Posição horizontal', 'f.cameraY': 'Posição vertical', 'f.cameraSize': 'Tamanho', 'f.cameraColor': 'Cor',
+  'opt.cam.mira': 'Mira', 'opt.cam.anel': 'Anel', 'opt.cam.ponto': 'Ponto', 'cam.align': 'Linha de leitura na altura da câmera', 'cam.hint': 'O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.',
+  'f.voiceLang': 'Idioma da fala', 'f.voiceSource': 'Microfone na janela', 'opt.src.control': 'do controle', 'opt.src.prompter': 'do prompter', 'f.voiceLookahead': 'Antecipação (palavras à frente da fala)', 'f.voiceJump': 'Confiança para pular longe',
+  'opt.jump.low': 'baixa', 'opt.jump.normal': 'normal', 'opt.jump.high': 'alta', 'opt.jump.vhigh': 'muito alta', 'f.voiceHybrid': 'Continuar rolando devagar se perder a voz',
+  'voice.hint1': 'Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.',
+  'voice.hint2': 'O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.',
+  'pedal.hint1': 'No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.',
+  'pedal.left': 'Pedal esquerdo', 'pedal.center': 'Pedal central', 'pedal.right': 'Pedal direito', 'pedal.press': 'pressione…', 'pedal.key.title': 'Clique e pressione a tecla que o Stream Deck vai enviar',
+  'pedal.hid.connect': 'Conectar pedal por USB', 'pedal.hid.cal': 'Calibrar pedais', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.',
+  'act.toggle': 'Play / Pause', 'act.play': 'Play', 'act.pause': 'Pause', 'act.speedUp': 'Mais rápido', 'act.speedDown': 'Mais devagar', 'act.prevBlock': 'Bloco anterior', 'act.nextBlock': 'Próximo bloco',
+  'act.prevSection': 'Seção anterior (título)', 'act.nextSection': 'Próxima seção (título)', 'act.nudgeBack': 'Voltar meia tela', 'act.nudgeFwd': 'Avançar meia tela', 'act.top': 'Voltar ao início', 'act.bottom': 'Ir para o fim',
+  'act.reset': 'Reiniciar (início + pause)', 'act.voice': 'Ligar / desligar voz', 'act.blank': 'Esconder / mostrar texto', 'act.fontUp': 'Fonte maior', 'act.fontDown': 'Fonte menor', 'act.mirrorH': 'Espelhar horizontal', 'act.mirrorV': 'Espelhar vertical', 'act.fullscreen': 'Tela cheia (prompter)',
+  'key.space': 'Espaço', 'key.esc': 'Esc',
+  'vs.off': 'desligada', 'vs.paused': 'em pausa', 'vs.listening': 'ouvindo', 'vs.synced': 'sincronizada', 'vs.searching': 'procurando sua posição', 'vs.denied': 'sem permissão de microfone', 'vs.unsupported': 'navegador sem suporte (use o Chrome)',
+  'vs.network': 'erro de rede no reconhecimento', 'vs.nomic': 'nenhum microfone encontrado', 'vs.unavailable': 'reconhecimento indisponível neste navegador', 'vs.waiting': 'aguardando o microfone', 'vs.word': 'palavra {n}', 'vs.remote': 'no prompter',
+  'hud.noControl': 'sem painel de controle', 'hud.hint': 'F tela cheia · Espaço play · ← → blocos', 'hud.back': '← painel', 'hud.pedal': 'pedal USB', 'hud.voiceMode': 'voz',
+  'hud.listening': '🎤 ouvindo', 'hud.synced': '🎤 sincronizado', 'hud.searching': '🎤 procurando…', 'hud.denied': '🎤 sem permissão', 'hud.unsupported': '🎤 sem suporte', 'hud.network': '🎤 erro de rede', 'hud.nomic': '🎤 sem microfone', 'hud.unavailable': '🎤 indisponível', 'hud.waiting': '🎤 aguardando microfone',
+  'hid.unavailable': 'WebHID indisponível neste navegador (use Chrome ou Edge).', 'hid.none': 'Nenhum dispositivo selecionado.', 'hid.connected': 'conectado: {name}', 'hid.default': 'dispositivo Elgato', 'hid.disconnected': 'pedal desconectado',
+  'hid.failed': 'falha ao conectar: {err}', 'hid.handoff': 'pedal passou para o painel de controle', 'hid.calibrating': 'calibrando: pressione o {pedal}', 'hid.calibrated': 'calibrado: bytes {bytes}', 'hid.report': 'relatório HID: ',
+  'popup.blocked': 'O navegador bloqueou a nova janela. Permita pop-ups para esta página e tente de novo.', 'empty.script': 'Sem roteiro. Cole um texto no painel de controle.', 'empty.edit': 'Sem roteiro.',
+  'title.control': 'Teleprompter · Controle', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'Não deu para carregar o roteiro de exemplo.',
+},
+en: {
+  'nav.control': 'Control', 'nav.script': 'Script',
+  'focus.warning': 'Editor focused — <span class="kbd">Esc</span> releases the shortcuts and the pedal',
+  'lamp.prompterOpen': 'prompter open', 'lamp.prompterClosed': 'prompter closed', 'lamp.voice': 'voice', 'lamp.pedalKeyboard': 'pedal via keyboard', 'lamp.pedalUsb': 'pedal via USB',
+  'btn.settings': 'Text, camera, voice, pedal and key settings', 'btn.here': 'View here', 'btn.here.title': 'Show the prompter in this same window (single screen)',
+  'btn.open': 'Open prompter ↗', 'btn.open.title': 'Opens the prompter screen in a new window (drag it to the Elgato Prompter)',
+  'monitor.stopped': 'Stopped', 'monitor.rolling': 'Scrolling at {speed} px/s', 'monitor.voice': 'Following voice', 'monitor.blank': 'text hidden', 'monitor.mirror': 'prompter mirror', 'monitor.preview': 'preview · prompter closed',
+  'progress.none': 'No script', 'progress.text': '{pct}% · word {i} of {n}', 'progress.remaining': '{t} left', 'progress.estimate': '{t} at 150 wpm', 'progress.title': 'Drag to jump',
+  'mode.auto': 'Auto scroll', 'mode.auto.sub': 'fixed speed, you set the pace', 'mode.voice': 'Follow my voice', 'mode.voice.sub': 'the text follows what you say',
+  'tr.top': 'Back to start (Home)', 'tr.prev': 'Previous block (←)', 'tr.toggle': 'Play / Pause (Space)', 'tr.next': 'Next block (→)', 'tr.bottom': 'Go to end (End)',
+  'speed.label': 'Speed', 'speed.reserve': 'Fallback scroll', 'speed.slower': 'Slower (↓)', 'speed.faster': 'Faster (↑)',
+  'voice.title': 'Voice', 'voice.placeholder': 'Press play (or use the pedal) to start listening.',
+  'voice.hint.default': 'If you improvise, the text waits. When you return to the script, it finds the spot again.', 'voice.hint.hybrid': 'With no voice for a few seconds, the text keeps moving at the fallback speed.', 'voice.hint.remote': 'The microphone is in the prompter window.',
+  'keys.playpause': 'play/pause', 'keys.blocks': 'blocks', 'keys.speed': 'speed', 'keys.blank': 'hide', 'keys.reset': 'restart',
+  'edit.open': 'Open .md', 'edit.sample': 'Sample', 'edit.save': 'Save .md', 'edit.clear': 'Clear', 'edit.placeholder': 'Paste, type or drop a .md file here…',
+  'edit.legend': '<code>#</code> section &nbsp; <code>[text]</code> cue &nbsp; <code>---</code> pause &nbsp; <code>**bold**</code> &nbsp; <code>&lt;!-- --&gt;</code> hidden',
+  'edit.stats': '{n} words · {t} at 150 wpm', 'edit.confirmClear': 'Clear the script?', 'edit.file': 'script.md',
+  'drawer.title': 'Settings', 'drawer.close': 'Close (Esc)', 'tab.text': 'Text', 'tab.camera': 'Camera', 'tab.voice': 'Voice', 'tab.pedal': 'Pedal', 'tab.keys': 'Keys',
+  'f.uiLang': 'Interface language', 'opt.lang.auto': 'Automatic (browser)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Font size', 'f.lineHeight': 'Line height', 'f.width': 'Text width', 'f.readingLine': 'Reading line position', 'f.fontFamily': 'Font', 'f.fontWeight': 'Weight', 'f.align': 'Alignment',
+  'f.colorText': 'Text color', 'f.colorBg': 'Background color', 'f.colorAccent': 'Highlight and reading line', 'f.colorCue': 'Cue color',
+  'f.showReadingLine': 'Show reading line', 'f.fade': 'Fade away from the line', 'f.highlightWord': 'Highlight the recognized word (voice)', 'f.showCues': 'Show cues [in square brackets]', 'f.showHeadings': 'Show section titles', 'f.mirrorH': 'Mirror horizontally', 'f.mirrorV': 'Mirror vertically',
+  'opt.font.sans': 'Sans (system)', 'opt.font.rounded': 'Rounded', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Regular', 'opt.weight.500': 'Medium', 'opt.weight.600': 'Semibold', 'opt.weight.700': 'Bold', 'opt.align.left': 'Left', 'opt.align.center': 'Center',
+  'f.camera': 'Show camera marker', 'f.cameraStyle': 'Style', 'f.cameraX': 'Horizontal position', 'f.cameraY': 'Vertical position', 'f.cameraSize': 'Size', 'f.cameraColor': 'Color',
+  'opt.cam.mira': 'Reticle', 'opt.cam.anel': 'Ring', 'opt.cam.ponto': 'Dot', 'cam.align': 'Reading line at camera height', 'cam.hint': 'The marker shows where the lens sits behind the glass. Drag the reticle on the preview or on the prompter itself to position it.',
+  'f.voiceLang': 'Speech language', 'f.voiceSource': 'Microphone in window', 'opt.src.control': 'control', 'opt.src.prompter': 'prompter', 'f.voiceLookahead': 'Look-ahead (words past the speech)', 'f.voiceJump': 'Confidence for far jumps',
+  'opt.jump.low': 'low', 'opt.jump.normal': 'normal', 'opt.jump.high': 'high', 'opt.jump.vhigh': 'very high', 'f.voiceHybrid': 'Keep scrolling slowly if the voice is lost',
+  'voice.hint1': 'With both windows open, “Microphone in window” picks who listens. If the chosen window is not open, the other one takes the microphone on its own.',
+  'voice.hint2': 'Recognition uses the browser’s Web Speech API (Chrome and Edge work well). The browser asks for microphone permission the first time.',
+  'pedal.hint1': 'In the Stream Deck app, give each pedal a Hotkey action with the keys below. The focused window receives the key. Click a key to record another one; F13–F15 avoid conflicts with typing.',
+  'pedal.left': 'Left pedal', 'pedal.center': 'Center pedal', 'pedal.right': 'Right pedal', 'pedal.press': 'press…', 'pedal.key.title': 'Click and press the key the Stream Deck will send',
+  'pedal.hid.connect': 'Connect pedal over USB', 'pedal.hid.cal': 'Calibrate pedals', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Over USB the pedal talks straight to this page, regardless of which window is focused, and holding the pedal repeats the action. If nothing arrives, close the Stream Deck app and try again.',
+  'act.toggle': 'Play / Pause', 'act.play': 'Play', 'act.pause': 'Pause', 'act.speedUp': 'Faster', 'act.speedDown': 'Slower', 'act.prevBlock': 'Previous block', 'act.nextBlock': 'Next block',
+  'act.prevSection': 'Previous section (title)', 'act.nextSection': 'Next section (title)', 'act.nudgeBack': 'Back half a screen', 'act.nudgeFwd': 'Forward half a screen', 'act.top': 'Back to start', 'act.bottom': 'Go to end',
+  'act.reset': 'Restart (start + pause)', 'act.voice': 'Voice on / off', 'act.blank': 'Hide / show text', 'act.fontUp': 'Bigger font', 'act.fontDown': 'Smaller font', 'act.mirrorH': 'Mirror horizontally', 'act.mirrorV': 'Mirror vertically', 'act.fullscreen': 'Full screen (prompter)',
+  'key.space': 'Space', 'key.esc': 'Esc',
+  'vs.off': 'off', 'vs.paused': 'paused', 'vs.listening': 'listening', 'vs.synced': 'in sync', 'vs.searching': 'looking for your position', 'vs.denied': 'no microphone permission', 'vs.unsupported': 'browser not supported (use Chrome)',
+  'vs.network': 'network error in recognition', 'vs.nomic': 'no microphone found', 'vs.unavailable': 'recognition unavailable in this browser', 'vs.waiting': 'waiting for the microphone', 'vs.word': 'word {n}', 'vs.remote': 'on the prompter',
+  'hud.noControl': 'no control panel', 'hud.hint': 'F full screen · Space play · ← → blocks', 'hud.back': '← panel', 'hud.pedal': 'USB pedal', 'hud.voiceMode': 'voice',
+  'hud.listening': '🎤 listening', 'hud.synced': '🎤 in sync', 'hud.searching': '🎤 searching…', 'hud.denied': '🎤 no permission', 'hud.unsupported': '🎤 not supported', 'hud.network': '🎤 network error', 'hud.nomic': '🎤 no microphone', 'hud.unavailable': '🎤 unavailable', 'hud.waiting': '🎤 waiting for microphone',
+  'hid.unavailable': 'WebHID is not available in this browser (use Chrome or Edge).', 'hid.none': 'No device selected.', 'hid.connected': 'connected: {name}', 'hid.default': 'Elgato device', 'hid.disconnected': 'pedal disconnected',
+  'hid.failed': 'could not connect: {err}', 'hid.handoff': 'pedal handed over to the control panel', 'hid.calibrating': 'calibrating: press the {pedal}', 'hid.calibrated': 'calibrated: bytes {bytes}', 'hid.report': 'HID report: ',
+  'popup.blocked': 'The browser blocked the new window. Allow pop-ups for this page and try again.', 'empty.script': 'No script. Paste a text in the control panel.', 'empty.edit': 'No script.',
+  'title.control': 'Teleprompter · Control', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'Could not load the sample script.',
+},
+es: {
+  'nav.control': 'Control', 'nav.script': 'Guion',
+  'focus.warning': 'Editor activo — <span class="kbd">Esc</span> libera los atajos y el pedal',
+  'lamp.prompterOpen': 'prompter abierto', 'lamp.prompterClosed': 'prompter cerrado', 'lamp.voice': 'voz', 'lamp.pedalKeyboard': 'pedal por teclado', 'lamp.pedalUsb': 'pedal por USB',
+  'btn.settings': 'Ajustes de texto, cámara, voz, pedal y teclas', 'btn.here': 'Ver aquí', 'btn.here.title': 'Muestra el prompter en esta misma ventana (pantalla única)',
+  'btn.open': 'Abrir prompter ↗', 'btn.open.title': 'Abre la pantalla del prompter en una ventana nueva (arrástrala al Elgato Prompter)',
+  'monitor.stopped': 'Detenido', 'monitor.rolling': 'Avanzando a {speed} px/s', 'monitor.voice': 'Siguiendo la voz', 'monitor.blank': 'texto oculto', 'monitor.mirror': 'espejo del prompter', 'monitor.preview': 'vista previa · prompter cerrado',
+  'progress.none': 'Sin guion', 'progress.text': '{pct}% · palabra {i} de {n}', 'progress.remaining': 'faltan {t}', 'progress.estimate': '{t} a 150 ppm', 'progress.title': 'Arrastra para saltar',
+  'mode.auto': 'Desplazamiento automático', 'mode.auto.sub': 'velocidad fija, tú marcas el ritmo', 'mode.voice': 'Seguir mi voz', 'mode.voice.sub': 'el texto sigue lo que dices',
+  'tr.top': 'Volver al inicio (Inicio)', 'tr.prev': 'Bloque anterior (←)', 'tr.toggle': 'Play / Pausa (Espacio)', 'tr.next': 'Siguiente bloque (→)', 'tr.bottom': 'Ir al final (Fin)',
+  'speed.label': 'Velocidad', 'speed.reserve': 'Desplazamiento de reserva', 'speed.slower': 'Más lento (↓)', 'speed.faster': 'Más rápido (↑)',
+  'voice.title': 'Voz', 'voice.placeholder': 'Dale play (o usa el pedal) para empezar a escuchar.',
+  'voice.hint.default': 'Si improvisas, el texto espera. Al volver al guion, reencuentra el punto.', 'voice.hint.hybrid': 'Sin voz durante unos segundos, el texto sigue a la velocidad de reserva.', 'voice.hint.remote': 'El micrófono está en la ventana del prompter.',
+  'keys.playpause': 'play/pausa', 'keys.blocks': 'bloques', 'keys.speed': 'velocidad', 'keys.blank': 'ocultar', 'keys.reset': 'reiniciar',
+  'edit.open': 'Abrir .md', 'edit.sample': 'Ejemplo', 'edit.save': 'Guardar .md', 'edit.clear': 'Limpiar', 'edit.placeholder': 'Pega, escribe o arrastra un archivo .md aquí…',
+  'edit.legend': '<code>#</code> sección &nbsp; <code>[texto]</code> acotación &nbsp; <code>---</code> pausa &nbsp; <code>**negrita**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto',
+  'edit.stats': '{n} palabras · {t} a 150 ppm', 'edit.confirmClear': '¿Limpiar el guion?', 'edit.file': 'guion.md',
+  'drawer.title': 'Ajustes', 'drawer.close': 'Cerrar (Esc)', 'tab.text': 'Texto', 'tab.camera': 'Cámara', 'tab.voice': 'Voz', 'tab.pedal': 'Pedal', 'tab.keys': 'Teclas',
+  'f.uiLang': 'Idioma de la interfaz', 'opt.lang.auto': 'Automático (del navegador)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Tamaño de fuente', 'f.lineHeight': 'Altura de línea', 'f.width': 'Ancho del texto', 'f.readingLine': 'Posición de la línea de lectura', 'f.fontFamily': 'Fuente', 'f.fontWeight': 'Peso', 'f.align': 'Alineación',
+  'f.colorText': 'Color del texto', 'f.colorBg': 'Color de fondo', 'f.colorAccent': 'Resalte y línea de lectura', 'f.colorCue': 'Color de las acotaciones',
+  'f.showReadingLine': 'Mostrar línea de lectura', 'f.fade': 'Desvanecer lejos de la línea', 'f.highlightWord': 'Marcar la palabra reconocida (voz)', 'f.showCues': 'Mostrar acotaciones [entre corchetes]', 'f.showHeadings': 'Mostrar títulos de sección', 'f.mirrorH': 'Espejo horizontal', 'f.mirrorV': 'Espejo vertical',
+  'opt.font.sans': 'Sans (sistema)', 'opt.font.rounded': 'Redondeada', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Normal', 'opt.weight.500': 'Media', 'opt.weight.600': 'Seminegrita', 'opt.weight.700': 'Negrita', 'opt.align.left': 'Izquierda', 'opt.align.center': 'Centro',
+  'f.camera': 'Mostrar marcador de cámara', 'f.cameraStyle': 'Estilo', 'f.cameraX': 'Posición horizontal', 'f.cameraY': 'Posición vertical', 'f.cameraSize': 'Tamaño', 'f.cameraColor': 'Color',
+  'opt.cam.mira': 'Mira', 'opt.cam.anel': 'Anillo', 'opt.cam.ponto': 'Punto', 'cam.align': 'Línea de lectura a la altura de la cámara', 'cam.hint': 'El marcador muestra dónde está la lente detrás del cristal. Arrastra la mira en la vista previa o en el propio prompter para colocarla.',
+  'f.voiceLang': 'Idioma del habla', 'f.voiceSource': 'Micrófono en la ventana', 'opt.src.control': 'del control', 'opt.src.prompter': 'del prompter', 'f.voiceLookahead': 'Anticipación (palabras por delante del habla)', 'f.voiceJump': 'Confianza para saltos lejanos',
+  'opt.jump.low': 'baja', 'opt.jump.normal': 'normal', 'opt.jump.high': 'alta', 'opt.jump.vhigh': 'muy alta', 'f.voiceHybrid': 'Seguir avanzando despacio si se pierde la voz',
+  'voice.hint1': 'Con las dos ventanas abiertas, “Micrófono en la ventana” elige quién escucha. Si la ventana elegida no está abierta, la otra toma el micrófono por sí sola.',
+  'voice.hint2': 'El reconocimiento usa la Web Speech API del navegador (Chrome y Edge funcionan bien). La primera vez el navegador pide permiso para el micrófono.',
+  'pedal.hint1': 'En la app Stream Deck, configura cada pedal con la acción Hotkey (tecla de acceso rápido) usando las teclas de abajo. La ventana activa recibe la tecla. Haz clic en una tecla para grabar otra; F13–F15 evitan conflictos al escribir.',
+  'pedal.left': 'Pedal izquierdo', 'pedal.center': 'Pedal central', 'pedal.right': 'Pedal derecho', 'pedal.press': 'pulsa…', 'pedal.key.title': 'Haz clic y pulsa la tecla que enviará el Stream Deck',
+  'pedal.hid.connect': 'Conectar pedal por USB', 'pedal.hid.cal': 'Calibrar pedales', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Por USB el pedal habla directo con esta página, sin depender de la ventana activa, y mantenerlo pulsado repite la acción. Si no llega nada, cierra la app Stream Deck e inténtalo de nuevo.',
+  'act.toggle': 'Play / Pausa', 'act.play': 'Play', 'act.pause': 'Pausa', 'act.speedUp': 'Más rápido', 'act.speedDown': 'Más lento', 'act.prevBlock': 'Bloque anterior', 'act.nextBlock': 'Siguiente bloque',
+  'act.prevSection': 'Sección anterior (título)', 'act.nextSection': 'Siguiente sección (título)', 'act.nudgeBack': 'Retroceder media pantalla', 'act.nudgeFwd': 'Avanzar media pantalla', 'act.top': 'Volver al inicio', 'act.bottom': 'Ir al final',
+  'act.reset': 'Reiniciar (inicio + pausa)', 'act.voice': 'Activar / desactivar voz', 'act.blank': 'Ocultar / mostrar texto', 'act.fontUp': 'Fuente más grande', 'act.fontDown': 'Fuente más pequeña', 'act.mirrorH': 'Espejo horizontal', 'act.mirrorV': 'Espejo vertical', 'act.fullscreen': 'Pantalla completa (prompter)',
+  'key.space': 'Espacio', 'key.esc': 'Esc',
+  'vs.off': 'apagada', 'vs.paused': 'en pausa', 'vs.listening': 'escuchando', 'vs.synced': 'sincronizada', 'vs.searching': 'buscando tu posición', 'vs.denied': 'sin permiso de micrófono', 'vs.unsupported': 'navegador sin soporte (usa Chrome)',
+  'vs.network': 'error de red en el reconocimiento', 'vs.nomic': 'no se encontró micrófono', 'vs.unavailable': 'reconocimiento no disponible en este navegador', 'vs.waiting': 'esperando el micrófono', 'vs.word': 'palabra {n}', 'vs.remote': 'en el prompter',
+  'hud.noControl': 'sin panel de control', 'hud.hint': 'F pantalla completa · Espacio play · ← → bloques', 'hud.back': '← panel', 'hud.pedal': 'pedal USB', 'hud.voiceMode': 'voz',
+  'hud.listening': '🎤 escuchando', 'hud.synced': '🎤 sincronizado', 'hud.searching': '🎤 buscando…', 'hud.denied': '🎤 sin permiso', 'hud.unsupported': '🎤 sin soporte', 'hud.network': '🎤 error de red', 'hud.nomic': '🎤 sin micrófono', 'hud.unavailable': '🎤 no disponible', 'hud.waiting': '🎤 esperando micrófono',
+  'hid.unavailable': 'WebHID no está disponible en este navegador (usa Chrome o Edge).', 'hid.none': 'Ningún dispositivo seleccionado.', 'hid.connected': 'conectado: {name}', 'hid.default': 'dispositivo Elgato', 'hid.disconnected': 'pedal desconectado',
+  'hid.failed': 'no se pudo conectar: {err}', 'hid.handoff': 'el pedal pasó al panel de control', 'hid.calibrating': 'calibrando: pulsa el {pedal}', 'hid.calibrated': 'calibrado: bytes {bytes}', 'hid.report': 'informe HID: ',
+  'popup.blocked': 'El navegador bloqueó la ventana nueva. Permite las ventanas emergentes para esta página e inténtalo de nuevo.', 'empty.script': 'Sin guion. Pega un texto en el panel de control.', 'empty.edit': 'Sin guion.',
+  'title.control': 'Teleprompter · Control', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'No se pudo cargar el guion de ejemplo.',
+}
+};
+const VOICE_LANG_FOR = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
+function detectLang() {
+  const tags = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']).map(x => String(x).toLowerCase());
+  for (const tg of tags) { if (tg.startsWith('pt')) return 'pt'; if (tg.startsWith('es')) return 'es'; if (tg.startsWith('en')) return 'en'; }
+  const first = tags[0] || 'en';
+  return first.startsWith('pt') ? 'pt' : first.startsWith('es') ? 'es' : 'en';
+}
+const LANG = (state.uiLang && I18N[state.uiLang]) ? state.uiLang : detectLang();
+document.documentElement.lang = { pt: 'pt-BR', en: 'en', es: 'es' }[LANG];
+function t(key, vars) {
+  let s = (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || I18N.pt[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+/* aplica o dicionário aos elementos marcados com data-i18n (texto), data-i18n-html, data-i18n-title e data-i18n-placeholder */
+function applyI18n(root) {
+  $$('[data-i18n]', root).forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $$('[data-i18n-html]', root).forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  $$('[data-i18n-title]', root).forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  $$('[data-i18n-placeholder]', root).forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+}
+/* roteiro de exemplo: arquivo separado por idioma; se não der para buscar (file://), usa a cópia embutida */
+async function loadSample(lang) {
+  lang = SAMPLES[lang] ? lang : 'en';
+  if (location.protocol !== 'file:') {
+    try {
+      const r = await fetch('scripts/roteiro.' + lang + '.md', { cache: 'no-cache' });
+      if (r.ok) { const txt = await r.text(); if (txt.trim().startsWith('#')) return txt; }
+    } catch (e) {}
+  }
+  return SAMPLES[lang];
+}
+
+/* ================================================================
    Scroller: renderiza o roteiro num palco e cuida da rolagem
    ================================================================ */
 class Scroller {
@@ -699,7 +809,7 @@ class Scroller {
   }
   setScript(md) {
     const keep = this.curIdx;
-    this.content.innerHTML = renderMarkdown(md) || '<p class="empty">Sem roteiro. Cole um texto no painel de controle.</p>';
+    this.content.innerHTML = renderMarkdown(md) || '<p class="empty">' + esc(t('empty.script')) + '</p>';
     const r = indexWords(this.content);
     this.words = r.words; this.norms = r.words.map(w => w.norm); this.blocks = r.blocks; this.hlEl = null; this.hlIdx = -1;
     this.layoutKey = null; this.relayout(false);
@@ -984,27 +1094,27 @@ function sendPos(force) {
 }
 
 const ACTIONS = {
-  toggle: ['Play / Pause', () => patch({ playing: !state.playing })],
-  play: ['Play', () => patch({ playing: true })],
-  pause: ['Pause', () => patch({ playing: false })],
-  speedUp: ['Mais rápido', () => patch({ speed: clamp(state.speed + 5, 0, 150) })],
-  speedDown: ['Mais devagar', () => patch({ speed: clamp(state.speed - 5, 0, 150) })],
-  prevBlock: ['Bloco anterior', () => dispatchPos({ cmd: 'prevBlock' })],
-  nextBlock: ['Próximo bloco', () => dispatchPos({ cmd: 'nextBlock' })],
-  prevSection: ['Seção anterior (título)', () => dispatchPos({ cmd: 'prevSection' })],
-  nextSection: ['Próxima seção (título)', () => dispatchPos({ cmd: 'nextSection' })],
-  nudgeBack: ['Voltar meia tela', () => dispatchPos({ cmd: 'nudge', frac: -0.5 })],
-  nudgeFwd: ['Avançar meia tela', () => dispatchPos({ cmd: 'nudge', frac: 0.5 })],
-  top: ['Voltar ao início', () => dispatchPos({ cmd: 'top' })],
-  bottom: ['Ir para o fim', () => dispatchPos({ cmd: 'bottom' })],
-  reset: ['Reiniciar (início + pause)', () => { patch({ playing: false }); dispatchPos({ cmd: 'top' }); }],
-  voice: ['Ligar / desligar voz', () => patch({ mode: state.mode === 'voice' ? 'auto' : 'voice' })],
-  blank: ['Esconder / mostrar texto', () => patch({ blank: !state.blank })],
-  fontUp: ['Fonte maior', () => patch({ fontSize: clamp(state.fontSize + 4, 20, 160) })],
-  fontDown: ['Fonte menor', () => patch({ fontSize: clamp(state.fontSize - 4, 20, 160) })],
-  mirrorH: ['Espelhar horizontal', () => patch({ mirrorH: !state.mirrorH })],
-  mirrorV: ['Espelhar vertical', () => patch({ mirrorV: !state.mirrorV })],
-  fullscreen: ['Tela cheia (prompter)', () => toggleFullscreen()],
+  toggle: ['act.toggle', () => patch({ playing: !state.playing })],
+  play: ['act.play', () => patch({ playing: true })],
+  pause: ['act.pause', () => patch({ playing: false })],
+  speedUp: ['act.speedUp', () => patch({ speed: clamp(state.speed + 5, 0, 150) })],
+  speedDown: ['act.speedDown', () => patch({ speed: clamp(state.speed - 5, 0, 150) })],
+  prevBlock: ['act.prevBlock', () => dispatchPos({ cmd: 'prevBlock' })],
+  nextBlock: ['act.nextBlock', () => dispatchPos({ cmd: 'nextBlock' })],
+  prevSection: ['act.prevSection', () => dispatchPos({ cmd: 'prevSection' })],
+  nextSection: ['act.nextSection', () => dispatchPos({ cmd: 'nextSection' })],
+  nudgeBack: ['act.nudgeBack', () => dispatchPos({ cmd: 'nudge', frac: -0.5 })],
+  nudgeFwd: ['act.nudgeFwd', () => dispatchPos({ cmd: 'nudge', frac: 0.5 })],
+  top: ['act.top', () => dispatchPos({ cmd: 'top' })],
+  bottom: ['act.bottom', () => dispatchPos({ cmd: 'bottom' })],
+  reset: ['act.reset', () => { patch({ playing: false }); dispatchPos({ cmd: 'top' }); }],
+  voice: ['act.voice', () => patch({ mode: state.mode === 'voice' ? 'auto' : 'voice' })],
+  blank: ['act.blank', () => patch({ blank: !state.blank })],
+  fontUp: ['act.fontUp', () => patch({ fontSize: clamp(state.fontSize + 4, 20, 160) })],
+  fontDown: ['act.fontDown', () => patch({ fontSize: clamp(state.fontSize - 4, 20, 160) })],
+  mirrorH: ['act.mirrorH', () => patch({ mirrorH: !state.mirrorH })],
+  mirrorV: ['act.mirrorV', () => patch({ mirrorV: !state.mirrorV })],
+  fullscreen: ['act.fullscreen', () => toggleFullscreen()],
 };
 const runAction = name => { const a = ACTIONS[name]; if (a) a[1](); };
 const KEYMAP = [
@@ -1064,24 +1174,24 @@ const hid = {
   /* quem fica com o pedal: o painel de controle; o prompter só quando está sozinho (tela única) */
   shouldOwn() { return ROLE === 'control' || !peerAlive('control'); },
   async connect(prompt) {
-    if (!this.available()) { this.status('WebHID indisponível neste navegador (use Chrome ou Edge).'); return false; }
+    if (!this.available()) { this.status(t('hid.unavailable')); return false; }
     try {
       let dev = null;
       if (!prompt) { const list = await navigator.hid.getDevices(); dev = list.find(d => d.vendorId === 0x0fd9) || null; }
       if (!dev && prompt) { const picked = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x0fd9 }] }); dev = picked && picked[0]; }
-      if (!dev) { if (prompt) this.status('Nenhum dispositivo selecionado.'); return false; }
+      if (!dev) { if (prompt) this.status(t('hid.none')); return false; }
       if (!dev.opened) await dev.open();
       this.device = dev; this.prev = null;
       dev.addEventListener('inputreport', e => this.onReport(e));
-      if (!this.listening) { this.listening = true; navigator.hid.addEventListener('disconnect', ev => { if (ev.device === this.device) { this.device = null; [0, 1, 2].forEach(p => this.release(p)); this.status('pedal desconectado'); } }); }
-      this.status('conectado: ' + (dev.productName || 'dispositivo Elgato'));
+      if (!this.listening) { this.listening = true; navigator.hid.addEventListener('disconnect', ev => { if (ev.device === this.device) { this.device = null; [0, 1, 2].forEach(p => this.release(p)); this.status(t('hid.disconnected')); } }); }
+      this.status(t('hid.connected', { name: dev.productName || t('hid.default') }));
       return true;
-    } catch (err) { if (prompt) this.status('falha ao conectar: ' + (err.message || err)); return false; }
+    } catch (err) { if (prompt) this.status(t('hid.failed', { err: err.message || err })); return false; }
   },
   async disconnect(why) {
     const d = this.device; if (!d) return; this.device = null; [0, 1, 2].forEach(p => this.release(p));
     try { await d.close(); } catch (e) {}
-    this.status(why || 'pedal desconectado');
+    this.status(why || t('hid.disconnected'));
   },
   /* a cada segundo: conecta se este for o dono e ainda não tiver o pedal; solta se a outra janela assumiu */
   async tick() {
@@ -1090,7 +1200,7 @@ const hid = {
     try {
       const own = this.shouldOwn();
       if (own && !this.device) await this.connect(false);
-      else if (!own && this.device) await this.disconnect('pedal passou para o painel de controle');
+      else if (!own && this.device) await this.disconnect(t('hid.handoff'));
     } finally { this.busy = false; }
   },
   status(s) { if (this.onStatus) this.onStatus(s, !!this.device); },
@@ -1105,8 +1215,8 @@ const hid = {
         const offs = state.hid.offsets.slice(); offs[this.calibrating] = idx;
         patch({ hid: Object.assign({}, state.hid, { offsets: offs }) });
         this.calibrating++;
-        if (this.calibrating > 2) { this.calibrating = -1; this.status('calibrado: bytes ' + offs.join(', ')); }
-        else this.status('calibrando: pressione o pedal ' + ['esquerdo', 'central', 'direito'][this.calibrating]);
+        if (this.calibrating > 2) { this.calibrating = -1; this.status(t('hid.calibrated', { bytes: offs.join(', ') })); }
+        else this.status(t('hid.calibrating', { pedal: t(['pedal.left', 'pedal.center', 'pedal.right'][this.calibrating]).toLowerCase() }));
       }
     } else if (prev) {
       state.hid.offsets.forEach((o, p) => {
@@ -1124,7 +1234,7 @@ const hid = {
     this.timers[p] = setTimeout(() => { this.timers[p] = setInterval(() => runAction(state.pedal.actions[p]), REPEAT_EVERY); }, REPEAT_DELAY);
   },
   release(p) { const t = this.timers[p]; if (t != null) { clearTimeout(t); clearInterval(t); this.timers[p] = null; } },
-  calibrate() { if (!this.device) return; this.calibrating = 0; this.status('calibrando: pressione o pedal esquerdo'); }
+  calibrate() { if (!this.device) return; this.calibrating = 0; this.status(t('hid.calibrating', { pedal: t('pedal.left').toLowerCase() })); }
 };
 
 setInterval(() => hid.tick(), 1200);
@@ -1134,7 +1244,7 @@ setInterval(() => hid.tick(), 1200);
    ================================================================ */
 function fillRange(inp) { const min = +inp.min || 0, max = +inp.max || 100; inp.style.setProperty('--fill', ((inp.value - min) / (max - min) * 100).toFixed(2) + '%'); }
 function initControl() {
-  const root = $('#control'); root.hidden = false; document.title = 'Teleprompter · Controle';
+  const root = $('#control'); root.hidden = false; document.title = t('title.control'); applyI18n(root);
   const previewStage = $('#previewStage');
   const sc = new Scroller(previewStage, { isDriver, onPos: () => { sendPos(false); updateProgress(); }, onEnd: () => { patch({ playing: false }); updateProgress(); } });
   activeScroller = sc;
@@ -1183,20 +1293,20 @@ function initControl() {
   ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
   ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
   dz.addEventListener('drop', e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
-  $('#btnSample').addEventListener('click', () => { editor.value = SAMPLE; patch({ script: SAMPLE }); dispatchPos({ cmd: 'top' }); });
-  $('#btnClear').addEventListener('click', () => { if (editor.value && !confirm('Limpar o roteiro?')) return; editor.value = ''; patch({ script: '' }); });
+  $('#btnSample').addEventListener('click', async () => { const md = await loadSample(LANG); editor.value = md; patch({ script: md }); dispatchPos({ cmd: 'top' }); });
+  $('#btnClear').addEventListener('click', () => { if (editor.value && !confirm(t('edit.confirmClear'))) return; editor.value = ''; patch({ script: '' }); });
   $('#btnDownload').addEventListener('click', () => {
     const blob = new Blob([editor.value], { type: 'text/markdown;charset=utf-8' }); const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'roteiro.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    a.href = URL.createObjectURL(blob); a.download = t('edit.file'); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   });
   function updateStats() {
     const n = sc.words.length;
-    $('#scriptStats').textContent = n ? `${n} palavras · ${fmtTime(n / 150 * 60)} a 150 ppm` : '';
+    $('#scriptStats').textContent = n ? t('edit.stats', { n, t: fmtTime(n / 150 * 60) }) : '';
   }
   const editVars = () => Object.assign({}, state, { blank: false, mirrorH: false, mirrorV: false, fade: false, camera: false, showHeadings: true });
   function renderEditPreview() {
     if ($('#screenEdit').hidden) return;
-    editContent.innerHTML = renderMarkdown(state.script) || '<p class="empty">Sem roteiro.</p>';
+    editContent.innerHTML = renderMarkdown(state.script) || '<p class="empty">' + esc(t('empty.edit')) + '</p>';
     applyVars(editPreview, editVars(), editScale());
   }
 
@@ -1214,8 +1324,8 @@ function initControl() {
     if (isDriver()) lastPos = { i: sc.curIdx, p: sc.progress(), rem: sc.remaining() };
     const n = sc.words.length;
     if (!seeking) { progress.value = Math.round(lastPos.p * 1000); fillRange(progress); }
-    $('#progressText').textContent = n ? `${Math.round(lastPos.p * 100)}% · palavra ${Math.min(n, lastPos.i + 1)} de ${n}` : 'Sem roteiro';
-    $('#progressRight').textContent = (state.playing && state.mode === 'auto' && isFinite(lastPos.rem)) ? `faltam ${fmtTime(lastPos.rem)}` : (n ? `${fmtTime(n / 150 * 60)} a 150 ppm` : '');
+    $('#progressText').textContent = n ? t('progress.text', { pct: Math.round(lastPos.p * 100), i: Math.min(n, lastPos.i + 1), n }) : t('progress.none');
+    $('#progressRight').textContent = (state.playing && state.mode === 'auto' && isFinite(lastPos.rem)) ? t('progress.remaining', { t: fmtTime(lastPos.rem) }) : (n ? t('progress.estimate', { t: fmtTime(n / 150 * 60) }) : '');
   }
   bus.on('pos', m => { if (ROLE === 'control' && !isDriver()) { sc.follow(m.i); sc.highlight(m.hl); lastPos = { i: m.i, p: m.p, rem: m.rem == null ? Infinity : m.rem }; state.wordIndex = m.i; saveState(); updateProgress(); } });
   setInterval(updateProgress, 500);
@@ -1233,50 +1343,51 @@ function initControl() {
       }
     } catch (e) {}
     const w = window.open(url, 'tp-prompter', feats);
-    if (!w) alert('O navegador bloqueou a nova janela. Permita pop-ups para esta página e tente de novo.');
+    if (!w) alert(t('popup.blocked'));
   });
 
   /* ---- campos de ajuste ---- */
   const TEXT_FIELDS = [
-    ['fontSize', 'Tamanho da fonte', 'range', { min: 20, max: 160, step: 2, unit: 'px' }],
-    ['lineHeight', 'Altura da linha', 'range', { min: 1, max: 2, step: 0.05 }],
-    ['width', 'Largura do texto', 'range', { min: 40, max: 100, step: 1, unit: '%' }],
-    ['readingLine', 'Posição da linha de leitura', 'range', { min: 15, max: 70, step: 1, unit: '%' }],
-    ['fontFamily', 'Fonte', 'select', { options: [['sans', 'Sans (sistema)'], ['rounded', 'Arredondada'], ['serif', 'Serif'], ['mono', 'Mono']] }],
-    ['fontWeight', 'Peso', 'select', { options: [['400', 'Normal'], ['500', 'Médio'], ['600', 'Semi-negrito'], ['700', 'Negrito']] }],
-    ['align', 'Alinhamento', 'select', { options: [['left', 'Esquerda'], ['center', 'Centro']] }],
-    ['colorText', 'Cor do texto', 'color'], ['colorBg', 'Cor de fundo', 'color'], ['colorAccent', 'Destaque e linha de leitura', 'color'], ['colorCue', 'Cor das deixas', 'color'],
-    ['showReadingLine', 'Mostrar linha de leitura', 'check'], ['fade', 'Esmaecer longe da linha', 'check'],
-    ['highlightWord', 'Marcar a palavra reconhecida (voz)', 'check'], ['showCues', 'Mostrar deixas [entre colchetes]', 'check'], ['showHeadings', 'Mostrar títulos de seção', 'check'],
-    ['mirrorH', 'Espelhar na horizontal', 'check'], ['mirrorV', 'Espelhar na vertical', 'check'],
+    ['uiLang', 'f.uiLang', 'select', { options: [['auto', 'opt.lang.auto'], ['pt', 'opt.lang.pt'], ['en', 'opt.lang.en'], ['es', 'opt.lang.es']] }],
+    ['fontSize', 'f.fontSize', 'range', { min: 20, max: 160, step: 2, unit: 'px' }],
+    ['lineHeight', 'f.lineHeight', 'range', { min: 1, max: 2, step: 0.05 }],
+    ['width', 'f.width', 'range', { min: 40, max: 100, step: 1, unit: '%' }],
+    ['readingLine', 'f.readingLine', 'range', { min: 15, max: 70, step: 1, unit: '%' }],
+    ['fontFamily', 'f.fontFamily', 'select', { options: [['sans', 'opt.font.sans'], ['rounded', 'opt.font.rounded'], ['serif', 'opt.font.serif'], ['mono', 'opt.font.mono']] }],
+    ['fontWeight', 'f.fontWeight', 'select', { options: [['400', 'opt.weight.400'], ['500', 'opt.weight.500'], ['600', 'opt.weight.600'], ['700', 'opt.weight.700']] }],
+    ['align', 'f.align', 'select', { options: [['left', 'opt.align.left'], ['center', 'opt.align.center']] }],
+    ['colorText', 'f.colorText', 'color'], ['colorBg', 'f.colorBg', 'color'], ['colorAccent', 'f.colorAccent', 'color'], ['colorCue', 'f.colorCue', 'color'],
+    ['showReadingLine', 'f.showReadingLine', 'check'], ['fade', 'f.fade', 'check'],
+    ['highlightWord', 'f.highlightWord', 'check'], ['showCues', 'f.showCues', 'check'], ['showHeadings', 'f.showHeadings', 'check'],
+    ['mirrorH', 'f.mirrorH', 'check'], ['mirrorV', 'f.mirrorV', 'check'],
   ];
   const CAMERA_FIELDS = [
-    ['camera', 'Mostrar marcador da câmera', 'check'],
-    ['cameraStyle', 'Estilo', 'select', { options: [['mira', 'Mira'], ['anel', 'Anel'], ['ponto', 'Ponto']] }],
-    ['cameraX', 'Posição horizontal', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
-    ['cameraY', 'Posição vertical', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
-    ['cameraSize', 'Tamanho', 'range', { min: 16, max: 240, step: 2, unit: 'px' }],
-    ['cameraColor', 'Cor', 'color'],
+    ['camera', 'f.camera', 'check'],
+    ['cameraStyle', 'f.cameraStyle', 'select', { options: [['mira', 'opt.cam.mira'], ['anel', 'opt.cam.anel'], ['ponto', 'opt.cam.ponto']] }],
+    ['cameraX', 'f.cameraX', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
+    ['cameraY', 'f.cameraY', 'range', { min: 0, max: 100, step: 0.5, unit: '%' }],
+    ['cameraSize', 'f.cameraSize', 'range', { min: 16, max: 240, step: 2, unit: 'px' }],
+    ['cameraColor', 'f.cameraColor', 'color'],
   ];
   const VOICE_FIELDS = [
-    ['voiceLang', 'Idioma', 'select', { options: [['pt-BR', 'Português (Brasil)'], ['pt-PT', 'Português (Portugal)'], ['en-US', 'English (US)'], ['en-GB', 'English (UK)'], ['es-ES', 'Español (España)'], ['es-MX', 'Español (México)'], ['fr-FR', 'Français'], ['de-DE', 'Deutsch'], ['it-IT', 'Italiano'], ['ja-JP', '日本語']] }],
-    ['voiceSource', 'Microfone na janela', 'select', { options: [['control', 'do controle'], ['prompter', 'do prompter']] }],
-    ['voiceLookahead', 'Antecipação (palavras à frente da fala)', 'range', { min: 0, max: 8, step: 1 }],
-    ['voiceJump', 'Confiança para pular longe', 'range', { min: 5, max: 11, step: 1, labels: { 5: 'baixa', 6: 'baixa', 7: 'normal', 8: 'normal', 9: 'alta', 10: 'alta', 11: 'muito alta' } }],
-    ['voiceHybrid', 'Continuar rolando devagar se perder a voz', 'check'],
+    ['voiceLang', 'f.voiceLang', 'select', { raw: true, options: [['pt-BR', 'Português (Brasil)'], ['pt-PT', 'Português (Portugal)'], ['en-US', 'English (US)'], ['en-GB', 'English (UK)'], ['es-ES', 'Español (España)'], ['es-MX', 'Español (México)'], ['fr-FR', 'Français'], ['de-DE', 'Deutsch'], ['it-IT', 'Italiano'], ['ja-JP', '日本語']] }],
+    ['voiceSource', 'f.voiceSource', 'select', { options: [['control', 'opt.src.control'], ['prompter', 'opt.src.prompter']] }],
+    ['voiceLookahead', 'f.voiceLookahead', 'range', { min: 0, max: 8, step: 1 }],
+    ['voiceJump', 'f.voiceJump', 'range', { min: 5, max: 11, step: 1, labels: { 5: 'opt.jump.low', 6: 'opt.jump.low', 7: 'opt.jump.normal', 8: 'opt.jump.normal', 9: 'opt.jump.high', 10: 'opt.jump.high', 11: 'opt.jump.vhigh' } }],
+    ['voiceHybrid', 'f.voiceHybrid', 'check'],
   ];
   const widgets = {};
   function buildFields(container, defs) {
-    for (const [key, label, type, o = {}] of defs) {
+    for (const [key, labelKey, type, o = {}] of defs) {
       const f = document.createElement('div'); f.className = 'field ' + type;
-      const id = 'f_' + key;
+      const id = 'f_' + key; const label = t(labelKey);
       if (type === 'range') {
         f.innerHTML = `<label for="${id}">${label}</label><span class="val"></span><input type="range" id="${id}" min="${o.min}" max="${o.max}" step="${o.step}">`;
         const inp = $('input', f), val = $('.val', f);
         inp.addEventListener('input', () => { fillRange(inp); patch({ [key]: +inp.value }); });
-        widgets[key] = v => { if (document.activeElement !== inp) inp.value = v; fillRange(inp); val.textContent = (o.labels && o.labels[v]) || (v + (o.unit || '')); };
+        widgets[key] = v => { if (document.activeElement !== inp) inp.value = v; fillRange(inp); val.textContent = (o.labels && o.labels[v]) ? t(o.labels[v]) : (v + (o.unit || '')); };
       } else if (type === 'select') {
-        f.innerHTML = `<label for="${id}">${label}</label><select id="${id}">${o.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>`;
+        f.innerHTML = `<label for="${id}">${label}</label><select id="${id}">${o.options.map(([v, l]) => `<option value="${v}">${o.raw ? l : t(l)}</option>`).join('')}</select>`;
         const sel = $('select', f); sel.addEventListener('change', () => patch({ [key]: sel.value }));
         widgets[key] = v => { sel.value = v; };
       } else if (type === 'color') {
@@ -1298,17 +1409,17 @@ function initControl() {
 
   /* ---- pedal ---- */
   const pedalRows = $('#pedalRows'); let recording = -1;
-  const prettyKey = k => ({ Space: 'Espaço', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Escape: 'Esc' })[k] || k;
+  const prettyKey = k => ({ Space: t('key.space'), ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Escape: t('key.esc') })[k] || k;
   function buildPedal() {
     pedalRows.innerHTML = '';
-    ['Pedal esquerdo', 'Pedal central', 'Pedal direito'].forEach((name, i) => {
+    ['pedal.left', 'pedal.center', 'pedal.right'].map(k => t(k)).forEach((name, i) => {
       const row = document.createElement('div'); row.className = 'pedal-row';
-      row.innerHTML = `<span class="name">${name}</span><select></select><button class="btn small key" title="Clique e pressione a tecla que o Stream Deck vai enviar"></button>`;
-      const sel = $('select', row); sel.innerHTML = Object.entries(ACTIONS).filter(([k]) => k !== 'fullscreen').map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+      row.innerHTML = `<span class="name">${name}</span><select></select><button class="btn small key" title="${esc(t('pedal.key.title'))}"></button>`;
+      const sel = $('select', row); sel.innerHTML = Object.entries(ACTIONS).filter(([k]) => k !== 'fullscreen').map(([k, [l]]) => `<option value="${k}">${t(l)}</option>`).join('');
       sel.value = state.pedal.actions[i];
       sel.addEventListener('change', () => { const a = state.pedal.actions.slice(); a[i] = sel.value; patch({ pedal: Object.assign({}, state.pedal, { actions: a }) }); });
       const kb = $('.key', row); kb.textContent = prettyKey(state.pedal.keys[i]);
-      kb.addEventListener('click', e => { e.stopPropagation(); recording = i; $$('.pedal-row .key').forEach(b => b.classList.remove('recording')); kb.classList.add('recording'); kb.textContent = 'pressione…'; });
+      kb.addEventListener('click', e => { e.stopPropagation(); recording = i; $$('.pedal-row .key').forEach(b => b.classList.remove('recording')); kb.classList.add('recording'); kb.textContent = t('pedal.press'); });
       pedalRows.appendChild(row);
     });
   }
@@ -1320,15 +1431,15 @@ function initControl() {
     patch({ pedal: Object.assign({}, state.pedal, { keys }) }); buildPedal();
   }, true);
   buildPedal();
-  hid.onStatus = (s, connected) => { $('#hidStatus').textContent = s; $('#btnHidCal').hidden = !connected; setLamp('#lampPedal', connected ? 'on' : '', connected ? 'pedal por USB' : 'pedal por teclado'); };
-  hid.onBytes = b => { $('#hidBytes').textContent = 'relatório HID: ' + b.slice(0, 16).join(' ') + (b.length > 16 ? ' …' : ''); };
+  hid.onStatus = (s, connected) => { $('#hidStatus').textContent = s; $('#btnHidCal').hidden = !connected; setLamp('#lampPedal', connected ? 'on' : '', t(connected ? 'lamp.pedalUsb' : 'lamp.pedalKeyboard')); };
+  hid.onBytes = b => { $('#hidBytes').textContent = t('hid.report') + b.slice(0, 16).join(' ') + (b.length > 16 ? ' …' : ''); };
   $('#btnHid').addEventListener('click', async () => { if (await hid.connect(true)) patch({ hid: Object.assign({}, state.hid, { auto: true }) }); });
   $('#btnHidCal').addEventListener('click', () => hid.calibrate());
   if (!hid.available()) $('#btnHid').disabled = true;
   else if (state.hid.auto) hid.tick();
 
   /* ---- tabela de teclas ---- */
-  $('#keysTable').innerHTML = KEYMAP.map(([k, a]) => `<tr><td>${k.split('+').map(x => `<span class="kbd">${prettyKey(x)}</span>`).join(' ')}</td><td>${ACTIONS[a][0]}</td></tr>`).join('');
+  $('#keysTable').innerHTML = KEYMAP.map(([k, a]) => `<tr><td>${k.split('+').map(x => `<span class="kbd">${prettyKey(x)}</span>`).join(' ')}</td><td>${t(ACTIONS[a][0])}</td></tr>`).join('');
 
   /* ---- voz ---- */
   const voice = new Voice({
@@ -1338,11 +1449,11 @@ function initControl() {
     onTranscript: (fin, int) => { $('#transcript').innerHTML = `<span class="final">${esc(fin.slice(-400))}</span> <span class="interim">${esc(int)}</span>`; }
   });
   voiceEngine = voice;
-  const VOICE_TEXT = { off: ['desligada', ''], paused: ['em pausa', ''], listening: ['ouvindo', 'busy'], synced: ['sincronizada', 'ok'], searching: ['procurando sua posição', 'busy'], denied: ['sem permissão de microfone', 'bad'], unsupported: ['navegador sem suporte (use o Chrome)', 'bad'], network: ['erro de rede no reconhecimento', 'bad'], nomic: ['nenhum microfone encontrado', 'bad'], unavailable: ['reconhecimento indisponível neste navegador', 'bad'], waiting: ['aguardando o microfone', 'busy'] };
+  const VOICE_CLS = { off: '', paused: '', listening: 'busy', synced: 'ok', searching: 'busy', denied: 'bad', unsupported: 'bad', network: 'bad', nomic: 'bad', unavailable: 'bad', waiting: 'busy' };
   function renderVoiceStatus(s, idx) {
-    const [t, cls] = VOICE_TEXT[s] || [s, '']; const el = $('#voiceStatus'); el.className = 'voice-status ' + cls; el.textContent = t + (s === 'synced' && idx != null ? ` · palavra ${idx + 1}` : '');
+    const cls = VOICE_CLS[s] || ''; const txt = t('vs.' + s); const el = $('#voiceStatus'); el.className = 'voice-status ' + cls; el.textContent = txt + (s === 'synced' && idx != null ? ' · ' + t('vs.word', { n: idx + 1 }) : '');
     const remote = state.mode === 'voice' && state.playing && !voiceOwner();
-    setLamp('#lampVoice', cls === 'ok' ? 'on' : cls, 'voz ' + (remote ? 'no prompter · ' + t : t));
+    setLamp('#lampVoice', cls === 'ok' ? 'on' : cls, t('lamp.voice') + ' ' + (remote ? t('vs.remote') + ' · ' + txt : txt));
   }
   bus.on('voice-status', m => { if (!voiceOwner()) renderVoiceStatus(m.s, m.idx); });
   let voiceMine = false;
@@ -1350,9 +1461,9 @@ function initControl() {
     voice.strong = state.voiceJump;
     const mine = voiceMine = state.mode === 'voice' && state.playing && voiceOwner();
     if (mine) voice.start(state.voiceLang); else voice.stop();
-    $('#voiceHint').textContent = (state.mode === 'voice' && state.playing && !mine) ? 'O microfone está na janela do prompter.' : (state.voiceHybrid ? 'Sem voz por alguns segundos, o texto continua na rolagem de reserva.' : 'Se você improvisar, o texto espera. Ao voltar ao roteiro, ele reencontra o ponto.');
+    $('#voiceHint').textContent = (state.mode === 'voice' && state.playing && !mine) ? t('voice.hint.remote') : (state.voiceHybrid ? t('voice.hint.hybrid') : t('voice.hint.default'));
     if (state.mode !== 'voice') { renderVoiceStatus('off'); }
-    else if (!state.playing) { $('#transcript').textContent = 'Dê play (ou use o pedal) para começar a ouvir.'; renderVoiceStatus('paused'); }
+    else if (!state.playing) { $('#transcript').textContent = t('voice.placeholder'); renderVoiceStatus('paused'); }
     else if (!mine) renderVoiceStatus('listening');
   }
   setInterval(() => { if (state.mode === 'voice' && state.playing && (state.playing && voiceOwner()) !== voiceMine) syncVoice(); }, 700);
@@ -1365,15 +1476,16 @@ function initControl() {
     applyStyle(sc, state, previewScale());
     if (!changed.script && !$('#screenEdit').hidden) applyVars(editPreview, editVars(), editScale());
     root.classList.toggle('mode-auto', state.mode !== 'voice'); root.classList.toggle('mode-voice', state.mode === 'voice'); root.classList.toggle('hybrid', !!state.voiceHybrid);
-    $('#speedLabel').textContent = state.mode === 'voice' ? 'Rolagem de reserva' : 'Velocidade';
+    $('#speedLabel').textContent = t(state.mode === 'voice' ? 'speed.reserve' : 'speed.label');
     $('#btnToggle').textContent = state.playing ? '❚❚' : '▶'; $('#btnToggle').classList.toggle('on', state.playing);
     $('#brandDot').classList.toggle('live', state.playing);
     $('#tally').classList.toggle('on', state.playing);
-    $('#monitorWhat').textContent = !state.playing ? (state.blank ? 'Parado · texto escondido' : 'Parado') : (state.mode === 'voice' ? 'Seguindo a voz' : `Rolando a ${state.speed} px/s`) + (state.blank ? ' · texto escondido' : '');
+    $('#monitorWhat').textContent = (!state.playing ? t('monitor.stopped') : (state.mode === 'voice' ? t('monitor.voice') : t('monitor.rolling', { speed: state.speed }))) + (state.blank ? ' · ' + t('monitor.blank') : '');
     speed.value = state.speed; fillRange(speed); $('#speedVal').innerHTML = `${state.speed}<small>px/s</small>`;
     $$('#modeSeg button').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
     if (changed.mode || changed.playing || changed.voiceLang || changed.voiceSource || changed.voiceJump || changed.voiceHybrid) syncVoice();
     if (changed.playing && state.playing) { editor.blur(); showScreen('run'); }
+    if (changed.uiLang && LANG !== ((state.uiLang && I18N[state.uiLang]) ? state.uiLang : detectLang())) { saveStateNow(); setTimeout(() => location.reload(), 50); }
     updateProgress();
   }
   const all = {}; Object.keys(state).forEach(k => all[k] = true);
@@ -1383,12 +1495,13 @@ function initControl() {
   new ResizeObserver(() => { applyStyle(sc, state, previewScale()); if (!$('#screenEdit').hidden) applyVars(editPreview, editVars(), editScale()); }).observe(document.body);
   setInterval(() => {
     const on = peerAlive('prompter');
-    setLamp('#lampPrompter', on ? 'on' : '', on ? 'prompter aberto' : 'prompter fechado');
-    $('#monitorRight').textContent = on ? 'espelho do prompter' : 'prévia · prompter fechado';
+    setLamp('#lampPrompter', on ? 'on' : '', t(on ? 'lamp.prompterOpen' : 'lamp.prompterClosed'));
+    $('#monitorRight').textContent = t(on ? 'monitor.mirror' : 'monitor.preview');
   }, 700);
   let screen = 'run'; try { screen = localStorage.getItem('teleprompter:screen') || 'run'; } catch (e) {}
   showScreen(screen);
-  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner };
+  if (FRESH) { patch({ voiceLang: VOICE_LANG_FOR[LANG] }); loadSample(LANG).then(md => { if (!state.script) { editor.value = md; patch({ script: md }); } }); }
+  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner, LANG, t };
   bus.send({ type: 'hello', role: ROLE });
 }
 
@@ -1396,13 +1509,13 @@ function initControl() {
    PROMPTER
    ================================================================ */
 function initPrompter() {
-  const root = $('#prompter'); root.hidden = false; document.title = 'Teleprompter · Prompter';
+  const root = $('#prompter'); root.hidden = false; document.title = t('title.prompter');
   const stage = $('#prompterStage');
   const sc = new Scroller(stage, { isDriver: () => true, onPos: () => { sendPos(false); }, onEnd: () => { patch({ playing: false }); sendPos(true); } });
   activeScroller = sc;
-  enableCamDrag(stage);
+  enableCamDrag(stage); applyI18n(stage);
   const hudPlay = $('.hud .play', stage), hudVoice = $('.hud .voice', stage), hudCtrl = $('.hud .ctrl', stage), hudPedal = $('.hud .pedal', stage);
-  hid.onStatus = (s, connected) => { hudPedal.hidden = !connected; hudPedal.textContent = connected ? 'pedal USB' : ''; showHud(2000); };
+  hid.onStatus = (s, connected) => { hudPedal.hidden = !connected; hudPedal.textContent = connected ? t('hud.pedal') : ''; showHud(2000); };
   let hudTimer = null, cursorTimer = null;
   function showHud(ms) { stage.classList.add('hud-on'); clearTimeout(hudTimer); hudTimer = setTimeout(() => stage.classList.remove('hud-on'), ms || 2500); }
   function showCursor() { root.classList.remove('nocursor'); clearTimeout(cursorTimer); cursorTimer = setTimeout(() => root.classList.add('nocursor'), 2000); }
@@ -1420,9 +1533,9 @@ function initPrompter() {
   voiceEngine = voice;
   bus.on('voice-status', m => { if (!voiceOwner()) renderVoice(m.s); });
   function renderVoice(s) {
-    const map = { listening: ['🎤 ouvindo', 'busy'], synced: ['🎤 sincronizado', 'ok'], searching: ['🎤 procurando…', 'busy'], denied: ['🎤 sem permissão', 'bad'], unsupported: ['🎤 sem suporte', 'bad'], network: ['🎤 erro de rede', 'bad'], nomic: ['🎤 sem microfone', 'bad'], unavailable: ['🎤 indisponível', 'bad'], waiting: ['🎤 aguardando microfone', 'busy'] };
+    const map = { listening: 'busy', synced: 'ok', searching: 'busy', denied: 'bad', unsupported: 'bad', network: 'bad', nomic: 'bad', unavailable: 'bad', waiting: 'busy' };
     const on = state.mode === 'voice' && map[s]; hudVoice.hidden = !on;
-    if (on) { hudVoice.textContent = map[s][0]; hudVoice.className = 'chip voice ' + map[s][1]; }
+    if (on) { hudVoice.textContent = t('hud.' + s); hudVoice.className = 'chip voice ' + map[s]; }
     if (s === 'searching' || s === 'synced') showHud(1500);
   }
   let voiceMine = false;
@@ -1436,17 +1549,19 @@ function initPrompter() {
   function render(changed) {
     if (changed.script) { sc.setScript(state.script); voice.cursor = sc.curIdx; }
     applyStyle(sc, state, 1);
-    hudPlay.textContent = (state.playing ? '▶ ' : '❚❚ ') + (state.mode === 'voice' ? 'voz' : state.speed + ' px/s');
+    hudPlay.textContent = (state.playing ? '▶ ' : '❚❚ ') + (state.mode === 'voice' ? t('hud.voiceMode') : state.speed + ' px/s');
     hudPlay.className = 'chip play ' + (state.playing ? 'ok' : '');
     if (changed.mode || changed.playing || changed.voiceLang || changed.voiceSource || changed.voiceJump) syncVoice();
     if (changed.playing || changed.speed || changed.mode || changed.blank || changed.fontSize) showHud(2000);
+    if (changed.uiLang && LANG !== ((state.uiLang && I18N[state.uiLang]) ? state.uiLang : detectLang())) { saveStateNow(); setTimeout(() => location.reload(), 50); }
   }
   const all = {}; Object.keys(state).forEach(k => all[k] = true);
   render(all);
   sc.jumpToWord(state.wordIndex || 0, true);
   onState(changed => render(changed));
   setInterval(() => { hudCtrl.hidden = peerAlive('control'); }, 700);
-  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner };
+  if (FRESH) { patch({ voiceLang: VOICE_LANG_FOR[LANG] }); loadSample(LANG).then(md => { if (!state.script) patch({ script: md }); }); }
+  window.__tp = { get state() { return state; }, sc, voice, patch, bus, alignTail, tokenize, Voice, isDriver, hid, voiceOwner, LANG, t };
   showHud(4000); showCursor();
   bus.send({ type: 'hello', role: ROLE });
 }

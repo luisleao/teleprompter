@@ -1,0 +1,181 @@
+(() => {
+'use strict';
+
+/* ================================================================
+   utilidades
+   ================================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtTime = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); };
+const hexToRgba = (hex, a) => { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return `rgba(255,179,71,${a})`; const n = parseInt(m[1], 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const normWord = w => w.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const tokenize = s => (s || '').split(/\s+/).map(normWord).filter(Boolean);
+
+const ROLE = (location.hash.replace('#', '') === 'prompter') ? 'prompter' : 'control';
+
+/* ================================================================
+   markdown mínimo -> HTML (sem dependências)
+   ================================================================ */
+function inline(s) {
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<em>$2</em>');
+  s = s.replace(/(^|[^_\w])_([^_\n]+)_(?!\w)/g, '$1<em>$2</em>');
+  s = s.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+  s = s.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');            // imagens somem
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1');          // links viram texto
+  s = s.replace(/\[([^\]\n]+)\]/g, '<span class="cue">$1</span>'); // [deixa]
+  return s;
+}
+function renderMarkdown(src) {
+  src = (src || '').replace(/\r\n?/g, '\n').replace(/<!--[\s\S]*?-->/g, '');
+  const lines = src.split('\n');
+  const out = []; const para = []; let i = 0, m;
+  const flush = () => { if (para.length) { out.push('<p>' + para.map(inline).join('<br>') + '</p>'); para.length = 0; } };
+  const LIST = /^\s*([-*+]|\d+[.)])\s+(.*)$/;
+  const QUOTE = /^\s*>\s?(.*)$/;
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) { flush(); const buf = []; i++; while (i < lines.length && !/^\s*```/.test(lines[i])) buf.push(esc(lines[i++])); i++; out.push('<pre>' + buf.join('\n') + '</pre>'); continue; }
+    if (/^\s*$/.test(raw)) { flush(); i++; continue; }
+    if ((m = /^\s*(#{1,6})\s+(.*)$/.exec(raw))) { flush(); const l = m[1].length; out.push(`<h${l}>${inline(esc(m[2].replace(/\s+#+\s*$/, '')))}</h${l}>`); i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(raw)) { flush(); out.push('<hr>'); i++; continue; }
+    if (QUOTE.test(raw)) { flush(); const buf = []; while (i < lines.length && (m = QUOTE.exec(lines[i]))) { buf.push(inline(esc(m[1]))); i++; } out.push('<blockquote><p>' + buf.join('<br>') + '</p></blockquote>'); continue; }
+    if ((m = LIST.exec(raw))) { flush(); const tag = /\d/.test(m[1]) ? 'ol' : 'ul'; const items = []; while (i < lines.length && (m = LIST.exec(lines[i]))) { items.push('<li>' + inline(esc(m[2])) + '</li>'); i++; } out.push(`<${tag}>${items.join('')}</${tag}>`); continue; }
+    para.push(esc(raw)); i++;
+  }
+  flush();
+  return out.join('\n');
+}
+
+/* envolve cada palavra em <span class="w" data-i> e devolve índice de palavras e blocos */
+function indexWords(container) {
+  const words = []; const blocks = [];
+  const SKIP = /^(PRE|CODE|H[1-6])$/; // código e títulos de seção não são fala
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, { acceptNode(n) {
+    let p = n.parentElement;
+    while (p && p !== container) { if (p.classList.contains('cue') || SKIP.test(p.tagName)) return NodeFilter.FILTER_REJECT; p = p.parentElement; }
+    return /\S/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+  } });
+  const nodes = []; let n; while ((n = walker.nextNode())) nodes.push(n);
+  for (const node of nodes) {
+    const frag = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); continue; }
+      const span = document.createElement('span'); span.className = 'w'; span.textContent = part;
+      const norm = normWord(part);
+      if (norm) { span.dataset.i = words.length; words.push({ el: span, norm }); }
+      frag.appendChild(span);
+    }
+    node.parentNode.replaceChild(frag, node);
+  }
+  // blocos de navegação: cada parágrafo/item; títulos e deixas sem fala apontam para a próxima palavra falada
+  const raw = [];
+  for (const el of container.children) {
+    if (el.tagName === 'UL' || el.tagName === 'OL') { for (const li of el.children) raw.push(mk(li)); }
+    else if (el.tagName !== 'HR') raw.push(mk(el));
+  }
+  function mk(el) { const first = el.querySelector('.w[data-i]'); return { el, start: first ? +first.dataset.i : null, heading: /^H[1-6]$/.test(el.tagName) }; }
+  let next = words.length - 1;
+  for (let i = raw.length - 1; i >= 0; i--) { if (raw[i].start == null) raw[i].start = next; else next = raw[i].start; }
+  for (const b of raw) {
+    const last = blocks[blocks.length - 1];
+    if (last && last.start === b.start) { last.heading = last.heading || b.heading; continue; }
+    if (words.length) blocks.push(b);
+  }
+  return { words, blocks };
+}
+
+/* ================================================================
+   bus: BroadcastChannel + localStorage (fallback), com dedupe
+   ================================================================ */
+const CHANNEL = 'teleprompter-v1';
+const bus = (() => {
+  const handlers = {}; const seen = []; const seenSet = new Set(); const myId = uid();
+  let bc = null; try { bc = new BroadcastChannel(CHANNEL); } catch (e) {}
+  function deliver(msg) {
+    if (!msg || msg.src === myId) return;
+    if (msg.id) { if (seenSet.has(msg.id)) return; seenSet.add(msg.id); seen.push(msg.id); if (seen.length > 300) seenSet.delete(seen.shift()); }
+    (handlers[msg.type] || []).forEach(h => { try { h(msg); } catch (e) { console.error(e); } });
+  }
+  if (bc) bc.onmessage = e => deliver(e.data);
+  window.addEventListener('storage', e => { if (e.key === CHANNEL + ':msg' && e.newValue) { try { deliver(JSON.parse(e.newValue)); } catch (err) {} } });
+  return {
+    id: myId,
+    send(msg) {
+      msg = Object.assign({}, msg, { id: uid(), src: myId });
+      if (bc) { try { bc.postMessage(msg); } catch (e) {} }
+      try { localStorage.setItem(CHANNEL + ':msg', JSON.stringify(msg)); } catch (e) {}
+    },
+    on(type, fn) { (handlers[type] = handlers[type] || []).push(fn); }
+  };
+})();
+
+/* ================================================================
+   estado compartilhado
+   ================================================================ */
+/* roteiros de exemplo embutidos (reserva para quando a página abre por file://) */
+/*__SAMPLES__*/
+
+const DEFAULTS = {
+  script: '', uiLang: 'auto',
+  playing: false, speed: 40, mode: 'auto', blank: false, wordIndex: 0,
+  voiceLang: 'pt-BR', voiceSource: 'control', voiceLookahead: 2, voiceJump: 7, voiceHybrid: false,
+  fontSize: 56, lineHeight: 1.35, fontWeight: '500', fontFamily: 'sans', width: 90, align: 'left', readingLine: 35,
+  colorText: '#f3efe6', colorBg: '#000000', colorAccent: '#ffb347', colorCue: '#6ec6ff',
+  showReadingLine: true, fade: true, highlightWord: true, showCues: true, showHeadings: true, mirrorH: false, mirrorV: false,
+  camera: false, cameraStyle: 'mira', cameraX: 50, cameraY: 22, cameraSize: 56, cameraColor: '#ff5a5a',
+  pedal: { keys: ['ArrowLeft', 'Space', 'ArrowRight'], actions: ['prevBlock', 'toggle', 'nextBlock'] },
+  hid: { offsets: [3, 4, 5], auto: false }
+};
+const FONTS = { sans: 'var(--font)', serif: 'Georgia, "Times New Roman", serif', mono: 'var(--mono)', rounded: '"SF Pro Rounded", "Nunito", "Arial Rounded MT Bold", var(--font)' };
+const LS_KEY = 'teleprompter:state';
+
+let FRESH = false; // primeira abertura: sem nada salvo ainda
+let state = loadState();
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if (s && typeof s === 'object') return Object.assign({}, DEFAULTS, s, { playing: false, pedal: Object.assign({}, DEFAULTS.pedal, s.pedal || {}), hid: Object.assign({}, DEFAULTS.hid, s.hid || {}) });
+  } catch (e) {}
+  FRESH = true;
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+const saveStateNow = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({}, state, { playing: false }))); } catch (e) {} };
+const saveState = debounce(saveStateNow, 300);
+
+const listeners = [];
+const onState = fn => listeners.push(fn);
+function patch(p, opts = {}) {
+  const changed = {};
+  for (const k in p) { if (JSON.stringify(state[k]) !== JSON.stringify(p[k])) { state[k] = p[k]; changed[k] = true; } }
+  const keys = Object.keys(changed);
+  if (!keys.length) return;
+  if (opts.broadcast !== false) { const out = {}; keys.forEach(k => out[k] = state[k]); bus.send({ type: 'patch', patch: out }); }
+  saveState();
+  listeners.forEach(fn => { try { fn(changed, state); } catch (e) { console.error(e); } });
+}
+bus.on('patch', m => patch(m.patch, { broadcast: false }));
+
+/* presença: quem está aberto? */
+const peers = {};
+bus.on('ping', m => { peers[m.role] = Date.now(); });
+const peerAlive = r => Date.now() - (peers[r] || 0) < 3200;
+const isDriver = () => ROLE === 'prompter' || !peerAlive('prompter');
+/* quem escuta o microfone: a janela escolhida nos ajustes; se ela não está aberta, a que está assume */
+const voiceOwner = () => state.voiceSource === ROLE || !peerAlive(state.voiceSource);
+setInterval(() => bus.send({ type: 'ping', role: ROLE }), 1000);
+bus.on('hello', m => {
+  bus.send({ type: 'ping', role: ROLE });
+  if (ROLE === 'control') bus.send({ type: 'patch', patch: Object.assign({}, state) });
+});
+
+/* ações que mexem na posição vão para quem rola (driver) */
+function dispatchPos(cmd) { if (isDriver()) execPos(cmd); else bus.send(Object.assign({ type: 'cmd' }, cmd)); }
+bus.on('cmd', m => { if (isDriver()) execPos(m); });

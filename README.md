@@ -7,6 +7,12 @@ Um único arquivo (`index.html`) com duas telas:
 
 As duas telas conversam pelo próprio navegador (BroadcastChannel, com localStorage de reserva), então não precisa de servidor nem de internet para o básico. Tudo que você ajusta fica salvo no navegador.
 
+## Idiomas
+
+A interface funciona em português, inglês e espanhol. O idioma vem do navegador: `pt` abre em português, `es` em espanhol e qualquer outro em inglês. Para forçar um idioma, use **⚙ → Texto → Idioma da interface** (as duas janelas recarregam). O idioma do reconhecimento de voz começa no mesmo idioma e pode ser trocado em **⚙ → Voz**.
+
+Os roteiros de exemplo ficam em arquivos separados, um por idioma: `scripts/roteiro.pt.md`, `scripts/roteiro.en.md` e `scripts/roteiro.es.md`. Quando a página é servida por HTTP (GitHub Pages, `python3 -m http.server`), o botão **Exemplo** e a primeira abertura leem esses arquivos, então dá para editá-los sem mexer no HTML. Aberta por `file://`, a página usa uma cópia embutida no `index.html`; para atualizar essa cópia depois de mudar um `.md`, rode o comando `python3 parts/build.py` (ou edite a constante `SAMPLES` no HTML).
+
 ## Como abrir
 
 Dá para abrir o `index.html` direto no Chrome (clique duplo no arquivo). Se preferir servir por HTTP, para começar entre na pasta e rode o comando `python3 -m http.server 8000`; depois abra `http://localhost:8000/index.html`.
@@ -22,7 +28,7 @@ O botão **Ver aqui** mostra o prompter na mesma janela; no prompter, passe o mo
 
 ## Roteiro em Markdown
 
-O botão **Exemplo** carrega um roteiro em capítulos que explica o próprio teleprompter (janelas, modos, voz, pedal, ajustes, câmera e Markdown), com marcações de câmera, tela e corte entre colchetes. Serve de teste: leia em voz alta e veja o texto acompanhar.
+O botão **Exemplo** carrega, no idioma da interface, um roteiro em capítulos que explica o próprio teleprompter (janelas, modos, voz, pedal, ajustes, câmera e Markdown), com marcações de câmera, tela e corte entre colchetes. Serve de teste: leia em voz alta e veja o texto acompanhar.
 
 - `# Título` vira um título de seção. Títulos não são fala: ficam fora da contagem de palavras e do reconhecimento de voz, e dá para escondê-los no prompter (⚙ → Texto → Mostrar títulos de seção). Os botões ◀ ▶ e as setas ← → pulam de bloco em bloco; `Shift + ←/→` pula de seção em seção, direto para a primeira palavra falada de cada uma.
 - `[texto entre colchetes]` é uma deixa: aparece em destaque, pode ser escondida e **não entra** no reconhecimento de voz.

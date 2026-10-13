@@ -1,0 +1,266 @@
+
+/* ================================================================
+   Scroller: renderiza o roteiro num palco e cuida da rolagem
+   ================================================================ */
+class Scroller {
+  constructor(stage, opts = {}) {
+    stage.appendChild($('#stageTpl').content.cloneNode(true));
+    this.stage = stage; this.viewport = $('.viewport', stage); this.content = $('.content', stage);
+    this.onPos = opts.onPos || null; this.onEnd = opts.onEnd || null; this.isDriver = opts.isDriver || (() => true);
+    this.words = []; this.norms = []; this.blocks = []; this.tops = [];
+    this.y = 0; this.target = 0; this.lastY = NaN; this.minY = 0; this.maxY = 0; this.vh = 0; this.lineY = 0; this.lineH = 40;
+    this.rl = 0.35; this.scale = 1; this.speed = 40; this.playing = false; this.mode = 'auto'; this.hybrid = false; this.lookahead = 2;
+    this.lastVoiceAt = 0; this.curIdx = 0; this.hlIdx = -1; this.hlEl = null; this.lastT = 0; this.pendingIdx = null;
+    this.ro = new ResizeObserver(() => this.relayout(true));
+    this.ro.observe(this.viewport);
+    this.loop = this.loop.bind(this);
+    requestAnimationFrame(this.loop);
+  }
+  setScript(md) {
+    const keep = this.curIdx;
+    this.content.innerHTML = renderMarkdown(md) || '<p class="empty">' + esc(t('empty.script')) + '</p>';
+    const r = indexWords(this.content);
+    this.words = r.words; this.norms = r.words.map(w => w.norm); this.blocks = r.blocks; this.hlEl = null; this.hlIdx = -1;
+    this.layoutKey = null; this.relayout(false);
+    this.jumpToWord(clamp(keep, 0, Math.max(0, this.words.length - 1)), true);
+  }
+  relayout(keepWord) {
+    const idx = this.curIdx;
+    const cs = getComputedStyle(this.content);
+    const fs = parseFloat(cs.fontSize) || 40, lh = parseFloat(cs.lineHeight);
+    const key = [this.viewport.clientHeight, this.content.offsetHeight, fs, lh, this.rl, cs.width].join(':');
+    if (key === this.layoutKey) return; // nada mudou de tamanho: não mexe na rolagem
+    this.layoutKey = key;
+    this.vh = this.viewport.clientHeight || 1;
+    this.lineY = this.vh * this.rl;
+    this.lineH = isFinite(lh) ? lh : fs * 1.35;
+    this.tops = this.words.map(w => w.el.offsetTop + Math.min(w.el.offsetHeight, this.lineH) / 2);
+    this.minY = -this.lineY;
+    this.maxY = Math.max(this.minY, this.content.offsetHeight - this.lineY);
+    if (keepWord && this.words.length) this.jumpToWord(idx, true);
+  }
+  wordAt(contentY) { // primeira palavra da linha que está na linha de leitura
+    const t = this.tops; if (!t.length) return 0;
+    const ref = contentY + this.lineH * 0.5;
+    let lo = 0, hi = t.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (t[mid] <= ref) lo = mid + 1; else hi = mid; }
+    let i = Math.max(0, lo - 1);
+    while (i > 0 && Math.abs(t[i - 1] - t[i]) < 1) i--; // volta para o começo da linha
+    return i;
+  }
+  yForWord(i) { if (!this.tops.length) return this.minY; i = clamp(Math.round(i), 0, this.tops.length - 1); return clamp(this.tops[i] - this.lineY, this.minY, this.maxY); }
+  jumpToWord(i, instant) { this.target = this.yForWord(i); if (instant) { this.y = this.target; } this.curIdx = clamp(Math.round(i), 0, Math.max(0, this.words.length - 1)); }
+  follow(i) { this.target = this.yForWord(i); this.curIdx = i; }
+  nudge(frac) { this.target = clamp(this.target + frac * this.vh, this.minY, this.maxY); }
+  jumpBlock(dir, headingsOnly) {
+    const list = this.blocks.filter(b => !headingsOnly || b.heading); if (!list.length) return;
+    const cur = this.curIdx; let ci = -1;
+    for (let i = 0; i < list.length; i++) if (list[i].start <= cur) ci = i;
+    if (dir < 0) { const back = (ci >= 0 && cur - list[ci].start > 3) ? ci : ci - 1; this.jumpToWord(back >= 0 ? list[back].start : 0); }
+    else { if (ci + 1 < list.length) this.jumpToWord(list[ci + 1].start); else this.jumpToWord(this.words.length - 1); }
+  }
+  setPlaying(p) {
+    if (p && !this.playing && this.mode === 'auto' && this.isDriver() && this.words.length && this.y >= this.maxY - 1 && this.maxY - this.minY > this.vh * 0.5) this.jumpToWord(0, true);
+    this.playing = p;
+  }
+  setLookahead(n) {
+    if (n === this.lookahead) return;
+    this.lookahead = n;
+    if (this.mode === 'voice' && this.hlIdx >= 0 && this.isDriver()) { const w = this.words.length; this.target = this.yForWord(clamp(this.hlIdx + n, 0, w - 1)); }
+  }
+  voiceTo(i) {
+    this.lastVoiceAt = performance.now();
+    const n = this.words.length; if (!n) return;
+    this.target = this.yForWord(clamp(i + this.lookahead, 0, n - 1));
+    this.highlight(i);
+  }
+  highlight(i) {
+    if (this.hlEl) this.hlEl.classList.remove('current');
+    this.hlEl = (i >= 0 && this.words[i]) ? this.words[i].el : null; this.hlIdx = i;
+    if (this.hlEl && this.stage.classList.contains('hlword')) this.hlEl.classList.add('current');
+  }
+  progress() { const r = this.maxY - this.minY; return r > 0 ? clamp((this.y - this.minY) / r, 0, 1) : 0; }
+  remaining() { const v = this.speed * this.scale; return v > 0 ? (this.maxY - this.y) / v : Infinity; }
+  loop(t) {
+    requestAnimationFrame(this.loop);
+    const dt = this.lastT ? Math.min(0.1, (t - this.lastT) / 1000) : 0; this.lastT = t;
+    const driver = this.isDriver();
+    if (driver && this.playing) {
+      const drift = this.mode === 'auto' || (this.hybrid && performance.now() - this.lastVoiceAt > 2500);
+      if (drift) this.target += this.speed * this.scale * dt;
+    }
+    this.target = clamp(this.target, this.minY, this.maxY);
+    const diff = this.target - this.y;
+    if (Math.abs(diff) < 0.05) this.y = this.target;
+    else { const k = Math.abs(diff) > this.vh ? 0.28 : 0.15; this.y += diff * Math.min(1, k * dt * 60); }
+    if (this.y !== this.lastY) { this.content.style.transform = `translate3d(0,${-this.y}px,0)`; this.lastY = this.y; }
+    if (driver && this.words.length) {
+      const idx = this.wordAt(this.y + this.lineY);
+      if (idx !== this.curIdx || (this.playing && t - (this.lastPosT || 0) > 400)) { this.lastPosT = t; this.curIdx = idx; if (this.onPos) this.onPos(idx); }
+      if (this.playing && this.mode === 'auto' && this.y >= this.maxY - 0.5 && this.target >= this.maxY && this.maxY - this.minY > this.vh * 0.5) { this.playing = false; if (this.onEnd) this.onEnd(); }
+    }
+  }
+}
+
+function applyVars(stage, s, scale) {
+  const st = stage.style;
+  st.setProperty('--p-size', (s.fontSize * scale).toFixed(2) + 'px');
+  st.setProperty('--p-lh', s.lineHeight);
+  st.setProperty('--p-weight', s.fontWeight);
+  st.setProperty('--p-font', FONTS[s.fontFamily] || FONTS.sans);
+  st.setProperty('--p-width', s.width + '%');
+  st.setProperty('--p-align', s.align);
+  st.setProperty('--p-rl', s.readingLine + '%');
+  st.setProperty('--p-text', s.colorText); st.setProperty('--p-bg', s.colorBg);
+  st.setProperty('--p-accent', s.colorAccent); st.setProperty('--p-cue', s.colorCue);
+  st.setProperty('--p-hl', hexToRgba(s.colorAccent, .3));
+  st.setProperty('--p-cx', s.cameraX + '%'); st.setProperty('--p-cy', s.cameraY + '%'); st.setProperty('--p-cs', (s.cameraSize * scale).toFixed(1) + 'px'); st.setProperty('--p-cam', s.cameraColor);
+  const cl = stage.classList;
+  cl.toggle('mirror-h', !!s.mirrorH); cl.toggle('mirror-v', !!s.mirrorV); cl.toggle('nocues', !s.showCues); cl.toggle('noheads', !s.showHeadings);
+  cl.toggle('noline', !s.showReadingLine); cl.toggle('fade', !!s.fade); cl.toggle('blank', !!s.blank); cl.toggle('hlword', !!s.highlightWord);
+  cl.toggle('cam-on', !!s.camera); cl.toggle('cam-anel', s.cameraStyle === 'anel'); cl.toggle('cam-ponto', s.cameraStyle === 'ponto');
+}
+/* arrastar a mira da câmera dentro de um palco (prévia ou prompter) */
+function enableCamDrag(stage) {
+  const cam = $('.cam', stage); if (!cam) return;
+  let dragging = false, raf = null;
+  const place = e => {
+    const r = stage.getBoundingClientRect(); if (!r.width || !r.height) return;
+    let fx = clamp((e.clientX - r.left) / r.width, 0, 1), fy = clamp((e.clientY - r.top) / r.height, 0, 1);
+    if (state.mirrorH) fx = 1 - fx; if (state.mirrorV) fy = 1 - fy;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => { raf = null; patch({ cameraX: Math.round(fx * 1000) / 10, cameraY: Math.round(fy * 1000) / 10 }); });
+  };
+  cam.addEventListener('pointerdown', e => { dragging = true; cam.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation(); });
+  cam.addEventListener('pointermove', e => { if (dragging) place(e); });
+  const stop = e => { if (!dragging) return; dragging = false; try { cam.releasePointerCapture(e.pointerId); } catch (err) {} };
+  cam.addEventListener('pointerup', stop); cam.addEventListener('pointercancel', stop);
+  cam.addEventListener('dblclick', e => e.stopPropagation());
+}
+function applyStyle(sc, s, scale) {
+  applyVars(sc.stage, s, scale);
+  sc.rl = s.readingLine / 100; sc.scale = scale; sc.speed = s.speed; sc.mode = s.mode; sc.hybrid = s.voiceHybrid;
+  sc.setPlaying(s.playing); sc.setLookahead(s.voiceLookahead);
+  sc.highlight(s.mode === 'voice' ? sc.hlIdx : -1);
+  sc.relayout(true);
+}
+
+/* ================================================================
+   Voz: Web Speech API + alinhamento tolerante (Smith-Waterman)
+   ================================================================ */
+const simCache = new Map();
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = new Array(n + 1), cur = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
+}
+function sim(a, b) {
+  if (a === b) return 2;
+  const la = a.length, lb = b.length;
+  if (la < 3 || lb < 3 || Math.abs(la - lb) > 3) return -1;
+  const key = a + '|' + b; const c = simCache.get(key); if (c !== undefined) return c;
+  let v = -1;
+  if (Math.min(la, lb) >= 4 && (a.startsWith(b) || b.startsWith(a))) v = 1.2;
+  else { const r = 1 - lev(a, b) / Math.max(la, lb); v = r >= 0.75 ? 1.2 : -1; }
+  if (simCache.size > 30000) simCache.clear();
+  simCache.set(key, v); return v;
+}
+/* alinha a cauda falada com o trecho script[lo..hi); devolve o melhor fim de alinhamento */
+function alignTail(tail, script, lo, hi, cur) {
+  const k = tail.length, n = hi - lo; if (n <= 0 || !k) return null;
+  const GAP = 0.7; let prev = new Float32Array(n + 1), row = new Float32Array(n + 1); let best = null;
+  for (let i = 1; i <= k; i++) {
+    const s = tail[i - 1]; row[0] = 0;
+    for (let j = 1; j <= n; j++) {
+      const v = Math.max(0, prev[j - 1] + sim(s, script[lo + j - 1]), prev[j] - GAP, row[j - 1] - GAP);
+      row[j] = v;
+    }
+    if (i >= k - 1) { // o alinhamento deve terminar na última ou penúltima palavra falada
+      const endPen = (i === k) ? 0 : 0.6;
+      for (let j = 1; j <= n; j++) {
+        const v = row[j]; if (v <= 0) continue;
+        const idx = lo + j - 1, d = idx - cur;
+        const dist = d >= 0 ? 0.012 * d : Math.min(3, 0.4 + 0.015 * (-d));
+        const sc = v - endPen - dist;
+        if (!best || sc > best.score) best = { idx, score: sc, raw: v };
+      }
+    }
+    const tmp = prev; prev = row; row = tmp;
+  }
+  return best;
+}
+
+class Voice {
+  constructor(o) { Object.assign(this, o); this.active = false; this.rec = null; this.prevFinals = []; this.sessionFinal = ''; this.cursor = 0; this.lost = false; this.lastMatchAt = 0; this.K = 10; this.status = 'off'; this.timer = null; this.lastWords = []; }
+  supported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  start(lang) {
+    if (this.active) { if (lang !== this.lang) { this.lang = lang; this.restart(); } return; }
+    if (!this.supported()) { this.setStatus('unsupported'); return; }
+    this.lang = lang; this.active = true; this.lost = false; this.cursor = this.getCursor(); this.lastMatchAt = performance.now();
+    this.spawn();
+  }
+  stop() { this.active = false; this.prevFinals = []; if (this.rec) { try { this.rec.abort(); } catch (e) {} this.rec = null; } this.setStatus('off'); }
+  restart() { if (this.rec) { try { this.rec.abort(); } catch (e) {} } }
+  /* o usuário pulou manualmente: esquece o que foi falado antes e recomeça a escutar dali */
+  resync(idx) {
+    this.cursor = idx; this.lost = false; this.lastMatchAt = performance.now();
+    this.lastWords = []; this.prevFinals = []; this.sessionFinal = ''; this.dropSession = true;
+    if (this.active && this.rec) this.restart();
+  }
+  setStatus(s, extra) { this.status = s; if (this.onStatus) this.onStatus(s, extra); }
+  spawn() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const r = new SR(); r.lang = this.lang || 'pt-BR'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+    let gotStart = false, gotResult = false; const spawnedAt = performance.now();
+    r.onstart = () => { gotStart = true; if (this.status !== 'synced' && this.status !== 'searching') this.setStatus('listening'); };
+    r.onresult = e => {
+      gotResult = true; this.failStreak = 0;
+      const finals = [], interims = [];
+      for (let i = 0; i < e.results.length; i++) { const t = e.results[i][0].transcript; (e.results[i].isFinal ? finals : interims).push(t); }
+      this.sessionFinal = finals.join(' ');
+      this.lastWords = this.prevFinals.concat(tokenize(this.sessionFinal), tokenize(interims.join(' ')));
+      if (this.onTranscript) this.onTranscript(finals.join(' '), interims.join(' '));
+      this.schedule();
+    };
+    r.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { this.active = false; this.setStatus('denied'); }
+      else if (e.error === 'network') this.setStatus('network');
+      else if (e.error === 'audio-capture') this.setStatus('nomic');
+    };
+    r.onend = () => {
+      if (this.dropSession) { this.dropSession = false; this.prevFinals = []; } else this.prevFinals = this.prevFinals.concat(tokenize(this.sessionFinal)).slice(-12);
+      this.sessionFinal = '';
+      // terminou na hora, sem resultado: o serviço de reconhecimento não está disponível
+      const quick = !gotStart || (performance.now() - spawnedAt < 1200 && !gotResult);
+      this.failStreak = quick ? (this.failStreak || 0) + 1 : 0;
+      if (!this.active) { this.setStatus('off'); return; }
+      let delay = 250;
+      if (this.failStreak >= 3) { delay = 3000; if (this.status !== 'denied') this.setStatus('unavailable'); }
+      setTimeout(() => { if (this.active) this.spawn(); }, delay);
+    };
+    this.rec = r;
+    try { r.start(); } catch (e) { setTimeout(() => { if (this.active) this.spawn(); }, 500); return; }
+    setTimeout(() => { if (this.rec === r && this.active && !gotStart) this.setStatus('waiting'); }, 1500);
+  }
+  schedule() { if (this.timer) return; this.timer = setTimeout(() => { this.timer = null; this.process(); }, 90); }
+  process() {
+    const tail = this.lastWords.slice(-this.K); if (tail.length < 2) return;
+    const script = this.getWords(); const n = script.length; if (!n) return;
+    const ext = this.getCursor(); if (Math.abs(ext - this.cursor) > 15) this.cursor = ext; // alguém pulou manualmente
+    const cur = this.cursor; const weak = 5.5, strong = this.strong || 7;
+    let best = null;
+    const near = alignTail(tail, script, Math.max(0, cur - 80), Math.min(n, cur + 300), cur);
+    if (near && near.score >= weak) best = near;
+    if (!best || this.lost) { const g = alignTail(tail, script, 0, n, cur); if (g && g.score >= strong && (!best || g.score > best.score + 1.5)) best = g; }
+    const now = performance.now();
+    if (!best) { if (!this.lost && now - this.lastMatchAt > 3500) { this.lost = true; this.setStatus('searching'); } return; }
+    this.lastMatchAt = now; this.lost = false;
+    if (best.idx > this.cursor || best.idx < this.cursor - 3) { this.cursor = best.idx; if (this.onMatch) this.onMatch(best.idx, best); }
+    this.setStatus('synced', best.idx);
+  }
+}

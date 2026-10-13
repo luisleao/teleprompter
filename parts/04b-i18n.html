@@ -1,0 +1,179 @@
+
+/* ================================================================
+   idiomas: português, inglês e espanhol
+   ================================================================ */
+const I18N = {
+pt: {
+  'nav.control': 'Controle', 'nav.script': 'Roteiro',
+  'focus.warning': 'Editor em foco — <span class="kbd">Esc</span> libera os atalhos e o pedal',
+  'lamp.prompterOpen': 'prompter aberto', 'lamp.prompterClosed': 'prompter fechado', 'lamp.voice': 'voz', 'lamp.pedalKeyboard': 'pedal por teclado', 'lamp.pedalUsb': 'pedal por USB',
+  'btn.settings': 'Ajustes de texto, câmera, voz, pedal e teclas', 'btn.here': 'Ver aqui', 'btn.here.title': 'Mostra o prompter nesta mesma janela (tela única)',
+  'btn.open': 'Abrir prompter ↗', 'btn.open.title': 'Abre a tela do prompter em uma nova janela (arraste para o Elgato Prompter)',
+  'monitor.stopped': 'Parado', 'monitor.rolling': 'Rolando a {speed} px/s', 'monitor.voice': 'Seguindo a voz', 'monitor.blank': 'texto escondido', 'monitor.mirror': 'espelho do prompter', 'monitor.preview': 'prévia · prompter fechado',
+  'progress.none': 'Sem roteiro', 'progress.text': '{pct}% · palavra {i} de {n}', 'progress.remaining': 'faltam {t}', 'progress.estimate': '{t} a 150 ppm', 'progress.title': 'Arraste para pular',
+  'mode.auto': 'Rolagem automática', 'mode.auto.sub': 'velocidade fixa, você controla o ritmo', 'mode.voice': 'Seguir minha voz', 'mode.voice.sub': 'o texto acompanha o que você fala',
+  'tr.top': 'Voltar ao início (Home)', 'tr.prev': 'Bloco anterior (←)', 'tr.toggle': 'Play / Pause (Espaço)', 'tr.next': 'Próximo bloco (→)', 'tr.bottom': 'Ir para o fim (End)',
+  'speed.label': 'Velocidade', 'speed.reserve': 'Rolagem de reserva', 'speed.slower': 'Mais devagar (↓)', 'speed.faster': 'Mais rápido (↑)',
+  'voice.title': 'Voz', 'voice.placeholder': 'Dê play (ou use o pedal) para começar a ouvir.',
+  'voice.hint.default': 'Se você improvisar, o texto espera. Ao voltar ao roteiro, ele reencontra o ponto.', 'voice.hint.hybrid': 'Sem voz por alguns segundos, o texto continua na rolagem de reserva.', 'voice.hint.remote': 'O microfone está na janela do prompter.',
+  'keys.playpause': 'play/pause', 'keys.blocks': 'blocos', 'keys.speed': 'velocidade', 'keys.blank': 'esconder', 'keys.reset': 'reiniciar',
+  'edit.open': 'Abrir .md', 'edit.sample': 'Exemplo', 'edit.save': 'Salvar .md', 'edit.clear': 'Limpar', 'edit.placeholder': 'Cole, digite ou arraste um arquivo .md aqui…',
+  'edit.legend': '<code>#</code> seção &nbsp; <code>[texto]</code> deixa &nbsp; <code>---</code> pausa &nbsp; <code>**negrito**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto',
+  'edit.stats': '{n} palavras · {t} a 150 ppm', 'edit.confirmClear': 'Limpar o roteiro?', 'edit.file': 'roteiro.md',
+  'drawer.title': 'Ajustes', 'drawer.close': 'Fechar (Esc)', 'tab.text': 'Texto', 'tab.camera': 'Câmera', 'tab.voice': 'Voz', 'tab.pedal': 'Pedal', 'tab.keys': 'Teclas',
+  'f.uiLang': 'Idioma da interface', 'opt.lang.auto': 'Automático (do navegador)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Tamanho da fonte', 'f.lineHeight': 'Altura da linha', 'f.width': 'Largura do texto', 'f.readingLine': 'Posição da linha de leitura', 'f.fontFamily': 'Fonte', 'f.fontWeight': 'Peso', 'f.align': 'Alinhamento',
+  'f.colorText': 'Cor do texto', 'f.colorBg': 'Cor de fundo', 'f.colorAccent': 'Destaque e linha de leitura', 'f.colorCue': 'Cor das deixas',
+  'f.showReadingLine': 'Mostrar linha de leitura', 'f.fade': 'Esmaecer longe da linha', 'f.highlightWord': 'Marcar a palavra reconhecida (voz)', 'f.showCues': 'Mostrar deixas [entre colchetes]', 'f.showHeadings': 'Mostrar títulos de seção', 'f.mirrorH': 'Espelhar na horizontal', 'f.mirrorV': 'Espelhar na vertical',
+  'opt.font.sans': 'Sans (sistema)', 'opt.font.rounded': 'Arredondada', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Normal', 'opt.weight.500': 'Médio', 'opt.weight.600': 'Semi-negrito', 'opt.weight.700': 'Negrito', 'opt.align.left': 'Esquerda', 'opt.align.center': 'Centro',
+  'f.camera': 'Mostrar marcador da câmera', 'f.cameraStyle': 'Estilo', 'f.cameraX': 'Posição horizontal', 'f.cameraY': 'Posição vertical', 'f.cameraSize': 'Tamanho', 'f.cameraColor': 'Cor',
+  'opt.cam.mira': 'Mira', 'opt.cam.anel': 'Anel', 'opt.cam.ponto': 'Ponto', 'cam.align': 'Linha de leitura na altura da câmera', 'cam.hint': 'O marcador mostra onde está a lente atrás do vidro. Arraste a mira na prévia ou no próprio prompter para posicionar.',
+  'f.voiceLang': 'Idioma da fala', 'f.voiceSource': 'Microfone na janela', 'opt.src.control': 'do controle', 'opt.src.prompter': 'do prompter', 'f.voiceLookahead': 'Antecipação (palavras à frente da fala)', 'f.voiceJump': 'Confiança para pular longe',
+  'opt.jump.low': 'baixa', 'opt.jump.normal': 'normal', 'opt.jump.high': 'alta', 'opt.jump.vhigh': 'muito alta', 'f.voiceHybrid': 'Continuar rolando devagar se perder a voz',
+  'voice.hint1': 'Com as duas janelas abertas, “Microfone na janela” escolhe quem escuta. Se a janela escolhida não estiver aberta, a outra assume o microfone sozinha.',
+  'voice.hint2': 'O reconhecimento usa a Web Speech API do navegador (Chrome e Edge funcionam bem). Na primeira vez o navegador pede permissão de microfone.',
+  'pedal.hint1': 'No app Stream Deck, configure cada pedal com a ação Hotkey (tecla de atalho) usando as teclas abaixo. A janela em foco recebe a tecla. Clique em uma tecla para gravar outra; F13–F15 evitam conflito com digitação.',
+  'pedal.left': 'Pedal esquerdo', 'pedal.center': 'Pedal central', 'pedal.right': 'Pedal direito', 'pedal.press': 'pressione…', 'pedal.key.title': 'Clique e pressione a tecla que o Stream Deck vai enviar',
+  'pedal.hid.connect': 'Conectar pedal por USB', 'pedal.hid.cal': 'Calibrar pedais', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Por USB o pedal fala direto com esta página, sem depender da janela em foco, e segurar o pedal repete a ação. Se não chegar nada, feche o app Stream Deck e tente de novo.',
+  'act.toggle': 'Play / Pause', 'act.play': 'Play', 'act.pause': 'Pause', 'act.speedUp': 'Mais rápido', 'act.speedDown': 'Mais devagar', 'act.prevBlock': 'Bloco anterior', 'act.nextBlock': 'Próximo bloco',
+  'act.prevSection': 'Seção anterior (título)', 'act.nextSection': 'Próxima seção (título)', 'act.nudgeBack': 'Voltar meia tela', 'act.nudgeFwd': 'Avançar meia tela', 'act.top': 'Voltar ao início', 'act.bottom': 'Ir para o fim',
+  'act.reset': 'Reiniciar (início + pause)', 'act.voice': 'Ligar / desligar voz', 'act.blank': 'Esconder / mostrar texto', 'act.fontUp': 'Fonte maior', 'act.fontDown': 'Fonte menor', 'act.mirrorH': 'Espelhar horizontal', 'act.mirrorV': 'Espelhar vertical', 'act.fullscreen': 'Tela cheia (prompter)',
+  'key.space': 'Espaço', 'key.esc': 'Esc',
+  'vs.off': 'desligada', 'vs.paused': 'em pausa', 'vs.listening': 'ouvindo', 'vs.synced': 'sincronizada', 'vs.searching': 'procurando sua posição', 'vs.denied': 'sem permissão de microfone', 'vs.unsupported': 'navegador sem suporte (use o Chrome)',
+  'vs.network': 'erro de rede no reconhecimento', 'vs.nomic': 'nenhum microfone encontrado', 'vs.unavailable': 'reconhecimento indisponível neste navegador', 'vs.waiting': 'aguardando o microfone', 'vs.word': 'palavra {n}', 'vs.remote': 'no prompter',
+  'hud.noControl': 'sem painel de controle', 'hud.hint': 'F tela cheia · Espaço play · ← → blocos', 'hud.back': '← painel', 'hud.pedal': 'pedal USB', 'hud.voiceMode': 'voz',
+  'hud.listening': '🎤 ouvindo', 'hud.synced': '🎤 sincronizado', 'hud.searching': '🎤 procurando…', 'hud.denied': '🎤 sem permissão', 'hud.unsupported': '🎤 sem suporte', 'hud.network': '🎤 erro de rede', 'hud.nomic': '🎤 sem microfone', 'hud.unavailable': '🎤 indisponível', 'hud.waiting': '🎤 aguardando microfone',
+  'hid.unavailable': 'WebHID indisponível neste navegador (use Chrome ou Edge).', 'hid.none': 'Nenhum dispositivo selecionado.', 'hid.connected': 'conectado: {name}', 'hid.default': 'dispositivo Elgato', 'hid.disconnected': 'pedal desconectado',
+  'hid.failed': 'falha ao conectar: {err}', 'hid.handoff': 'pedal passou para o painel de controle', 'hid.calibrating': 'calibrando: pressione o {pedal}', 'hid.calibrated': 'calibrado: bytes {bytes}', 'hid.report': 'relatório HID: ',
+  'popup.blocked': 'O navegador bloqueou a nova janela. Permita pop-ups para esta página e tente de novo.', 'empty.script': 'Sem roteiro. Cole um texto no painel de controle.', 'empty.edit': 'Sem roteiro.',
+  'title.control': 'Teleprompter · Controle', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'Não deu para carregar o roteiro de exemplo.',
+},
+en: {
+  'nav.control': 'Control', 'nav.script': 'Script',
+  'focus.warning': 'Editor focused — <span class="kbd">Esc</span> releases the shortcuts and the pedal',
+  'lamp.prompterOpen': 'prompter open', 'lamp.prompterClosed': 'prompter closed', 'lamp.voice': 'voice', 'lamp.pedalKeyboard': 'pedal via keyboard', 'lamp.pedalUsb': 'pedal via USB',
+  'btn.settings': 'Text, camera, voice, pedal and key settings', 'btn.here': 'View here', 'btn.here.title': 'Show the prompter in this same window (single screen)',
+  'btn.open': 'Open prompter ↗', 'btn.open.title': 'Opens the prompter screen in a new window (drag it to the Elgato Prompter)',
+  'monitor.stopped': 'Stopped', 'monitor.rolling': 'Scrolling at {speed} px/s', 'monitor.voice': 'Following voice', 'monitor.blank': 'text hidden', 'monitor.mirror': 'prompter mirror', 'monitor.preview': 'preview · prompter closed',
+  'progress.none': 'No script', 'progress.text': '{pct}% · word {i} of {n}', 'progress.remaining': '{t} left', 'progress.estimate': '{t} at 150 wpm', 'progress.title': 'Drag to jump',
+  'mode.auto': 'Auto scroll', 'mode.auto.sub': 'fixed speed, you set the pace', 'mode.voice': 'Follow my voice', 'mode.voice.sub': 'the text follows what you say',
+  'tr.top': 'Back to start (Home)', 'tr.prev': 'Previous block (←)', 'tr.toggle': 'Play / Pause (Space)', 'tr.next': 'Next block (→)', 'tr.bottom': 'Go to end (End)',
+  'speed.label': 'Speed', 'speed.reserve': 'Fallback scroll', 'speed.slower': 'Slower (↓)', 'speed.faster': 'Faster (↑)',
+  'voice.title': 'Voice', 'voice.placeholder': 'Press play (or use the pedal) to start listening.',
+  'voice.hint.default': 'If you improvise, the text waits. When you return to the script, it finds the spot again.', 'voice.hint.hybrid': 'With no voice for a few seconds, the text keeps moving at the fallback speed.', 'voice.hint.remote': 'The microphone is in the prompter window.',
+  'keys.playpause': 'play/pause', 'keys.blocks': 'blocks', 'keys.speed': 'speed', 'keys.blank': 'hide', 'keys.reset': 'restart',
+  'edit.open': 'Open .md', 'edit.sample': 'Sample', 'edit.save': 'Save .md', 'edit.clear': 'Clear', 'edit.placeholder': 'Paste, type or drop a .md file here…',
+  'edit.legend': '<code>#</code> section &nbsp; <code>[text]</code> cue &nbsp; <code>---</code> pause &nbsp; <code>**bold**</code> &nbsp; <code>&lt;!-- --&gt;</code> hidden',
+  'edit.stats': '{n} words · {t} at 150 wpm', 'edit.confirmClear': 'Clear the script?', 'edit.file': 'script.md',
+  'drawer.title': 'Settings', 'drawer.close': 'Close (Esc)', 'tab.text': 'Text', 'tab.camera': 'Camera', 'tab.voice': 'Voice', 'tab.pedal': 'Pedal', 'tab.keys': 'Keys',
+  'f.uiLang': 'Interface language', 'opt.lang.auto': 'Automatic (browser)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Font size', 'f.lineHeight': 'Line height', 'f.width': 'Text width', 'f.readingLine': 'Reading line position', 'f.fontFamily': 'Font', 'f.fontWeight': 'Weight', 'f.align': 'Alignment',
+  'f.colorText': 'Text color', 'f.colorBg': 'Background color', 'f.colorAccent': 'Highlight and reading line', 'f.colorCue': 'Cue color',
+  'f.showReadingLine': 'Show reading line', 'f.fade': 'Fade away from the line', 'f.highlightWord': 'Highlight the recognized word (voice)', 'f.showCues': 'Show cues [in square brackets]', 'f.showHeadings': 'Show section titles', 'f.mirrorH': 'Mirror horizontally', 'f.mirrorV': 'Mirror vertically',
+  'opt.font.sans': 'Sans (system)', 'opt.font.rounded': 'Rounded', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Regular', 'opt.weight.500': 'Medium', 'opt.weight.600': 'Semibold', 'opt.weight.700': 'Bold', 'opt.align.left': 'Left', 'opt.align.center': 'Center',
+  'f.camera': 'Show camera marker', 'f.cameraStyle': 'Style', 'f.cameraX': 'Horizontal position', 'f.cameraY': 'Vertical position', 'f.cameraSize': 'Size', 'f.cameraColor': 'Color',
+  'opt.cam.mira': 'Reticle', 'opt.cam.anel': 'Ring', 'opt.cam.ponto': 'Dot', 'cam.align': 'Reading line at camera height', 'cam.hint': 'The marker shows where the lens sits behind the glass. Drag the reticle on the preview or on the prompter itself to position it.',
+  'f.voiceLang': 'Speech language', 'f.voiceSource': 'Microphone in window', 'opt.src.control': 'control', 'opt.src.prompter': 'prompter', 'f.voiceLookahead': 'Look-ahead (words past the speech)', 'f.voiceJump': 'Confidence for far jumps',
+  'opt.jump.low': 'low', 'opt.jump.normal': 'normal', 'opt.jump.high': 'high', 'opt.jump.vhigh': 'very high', 'f.voiceHybrid': 'Keep scrolling slowly if the voice is lost',
+  'voice.hint1': 'With both windows open, “Microphone in window” picks who listens. If the chosen window is not open, the other one takes the microphone on its own.',
+  'voice.hint2': 'Recognition uses the browser’s Web Speech API (Chrome and Edge work well). The browser asks for microphone permission the first time.',
+  'pedal.hint1': 'In the Stream Deck app, give each pedal a Hotkey action with the keys below. The focused window receives the key. Click a key to record another one; F13–F15 avoid conflicts with typing.',
+  'pedal.left': 'Left pedal', 'pedal.center': 'Center pedal', 'pedal.right': 'Right pedal', 'pedal.press': 'press…', 'pedal.key.title': 'Click and press the key the Stream Deck will send',
+  'pedal.hid.connect': 'Connect pedal over USB', 'pedal.hid.cal': 'Calibrate pedals', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Over USB the pedal talks straight to this page, regardless of which window is focused, and holding the pedal repeats the action. If nothing arrives, close the Stream Deck app and try again.',
+  'act.toggle': 'Play / Pause', 'act.play': 'Play', 'act.pause': 'Pause', 'act.speedUp': 'Faster', 'act.speedDown': 'Slower', 'act.prevBlock': 'Previous block', 'act.nextBlock': 'Next block',
+  'act.prevSection': 'Previous section (title)', 'act.nextSection': 'Next section (title)', 'act.nudgeBack': 'Back half a screen', 'act.nudgeFwd': 'Forward half a screen', 'act.top': 'Back to start', 'act.bottom': 'Go to end',
+  'act.reset': 'Restart (start + pause)', 'act.voice': 'Voice on / off', 'act.blank': 'Hide / show text', 'act.fontUp': 'Bigger font', 'act.fontDown': 'Smaller font', 'act.mirrorH': 'Mirror horizontally', 'act.mirrorV': 'Mirror vertically', 'act.fullscreen': 'Full screen (prompter)',
+  'key.space': 'Space', 'key.esc': 'Esc',
+  'vs.off': 'off', 'vs.paused': 'paused', 'vs.listening': 'listening', 'vs.synced': 'in sync', 'vs.searching': 'looking for your position', 'vs.denied': 'no microphone permission', 'vs.unsupported': 'browser not supported (use Chrome)',
+  'vs.network': 'network error in recognition', 'vs.nomic': 'no microphone found', 'vs.unavailable': 'recognition unavailable in this browser', 'vs.waiting': 'waiting for the microphone', 'vs.word': 'word {n}', 'vs.remote': 'on the prompter',
+  'hud.noControl': 'no control panel', 'hud.hint': 'F full screen · Space play · ← → blocks', 'hud.back': '← panel', 'hud.pedal': 'USB pedal', 'hud.voiceMode': 'voice',
+  'hud.listening': '🎤 listening', 'hud.synced': '🎤 in sync', 'hud.searching': '🎤 searching…', 'hud.denied': '🎤 no permission', 'hud.unsupported': '🎤 not supported', 'hud.network': '🎤 network error', 'hud.nomic': '🎤 no microphone', 'hud.unavailable': '🎤 unavailable', 'hud.waiting': '🎤 waiting for microphone',
+  'hid.unavailable': 'WebHID is not available in this browser (use Chrome or Edge).', 'hid.none': 'No device selected.', 'hid.connected': 'connected: {name}', 'hid.default': 'Elgato device', 'hid.disconnected': 'pedal disconnected',
+  'hid.failed': 'could not connect: {err}', 'hid.handoff': 'pedal handed over to the control panel', 'hid.calibrating': 'calibrating: press the {pedal}', 'hid.calibrated': 'calibrated: bytes {bytes}', 'hid.report': 'HID report: ',
+  'popup.blocked': 'The browser blocked the new window. Allow pop-ups for this page and try again.', 'empty.script': 'No script. Paste a text in the control panel.', 'empty.edit': 'No script.',
+  'title.control': 'Teleprompter · Control', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'Could not load the sample script.',
+},
+es: {
+  'nav.control': 'Control', 'nav.script': 'Guion',
+  'focus.warning': 'Editor activo — <span class="kbd">Esc</span> libera los atajos y el pedal',
+  'lamp.prompterOpen': 'prompter abierto', 'lamp.prompterClosed': 'prompter cerrado', 'lamp.voice': 'voz', 'lamp.pedalKeyboard': 'pedal por teclado', 'lamp.pedalUsb': 'pedal por USB',
+  'btn.settings': 'Ajustes de texto, cámara, voz, pedal y teclas', 'btn.here': 'Ver aquí', 'btn.here.title': 'Muestra el prompter en esta misma ventana (pantalla única)',
+  'btn.open': 'Abrir prompter ↗', 'btn.open.title': 'Abre la pantalla del prompter en una ventana nueva (arrástrala al Elgato Prompter)',
+  'monitor.stopped': 'Detenido', 'monitor.rolling': 'Avanzando a {speed} px/s', 'monitor.voice': 'Siguiendo la voz', 'monitor.blank': 'texto oculto', 'monitor.mirror': 'espejo del prompter', 'monitor.preview': 'vista previa · prompter cerrado',
+  'progress.none': 'Sin guion', 'progress.text': '{pct}% · palabra {i} de {n}', 'progress.remaining': 'faltan {t}', 'progress.estimate': '{t} a 150 ppm', 'progress.title': 'Arrastra para saltar',
+  'mode.auto': 'Desplazamiento automático', 'mode.auto.sub': 'velocidad fija, tú marcas el ritmo', 'mode.voice': 'Seguir mi voz', 'mode.voice.sub': 'el texto sigue lo que dices',
+  'tr.top': 'Volver al inicio (Inicio)', 'tr.prev': 'Bloque anterior (←)', 'tr.toggle': 'Play / Pausa (Espacio)', 'tr.next': 'Siguiente bloque (→)', 'tr.bottom': 'Ir al final (Fin)',
+  'speed.label': 'Velocidad', 'speed.reserve': 'Desplazamiento de reserva', 'speed.slower': 'Más lento (↓)', 'speed.faster': 'Más rápido (↑)',
+  'voice.title': 'Voz', 'voice.placeholder': 'Dale play (o usa el pedal) para empezar a escuchar.',
+  'voice.hint.default': 'Si improvisas, el texto espera. Al volver al guion, reencuentra el punto.', 'voice.hint.hybrid': 'Sin voz durante unos segundos, el texto sigue a la velocidad de reserva.', 'voice.hint.remote': 'El micrófono está en la ventana del prompter.',
+  'keys.playpause': 'play/pausa', 'keys.blocks': 'bloques', 'keys.speed': 'velocidad', 'keys.blank': 'ocultar', 'keys.reset': 'reiniciar',
+  'edit.open': 'Abrir .md', 'edit.sample': 'Ejemplo', 'edit.save': 'Guardar .md', 'edit.clear': 'Limpiar', 'edit.placeholder': 'Pega, escribe o arrastra un archivo .md aquí…',
+  'edit.legend': '<code>#</code> sección &nbsp; <code>[texto]</code> acotación &nbsp; <code>---</code> pausa &nbsp; <code>**negrita**</code> &nbsp; <code>&lt;!-- --&gt;</code> oculto',
+  'edit.stats': '{n} palabras · {t} a 150 ppm', 'edit.confirmClear': '¿Limpiar el guion?', 'edit.file': 'guion.md',
+  'drawer.title': 'Ajustes', 'drawer.close': 'Cerrar (Esc)', 'tab.text': 'Texto', 'tab.camera': 'Cámara', 'tab.voice': 'Voz', 'tab.pedal': 'Pedal', 'tab.keys': 'Teclas',
+  'f.uiLang': 'Idioma de la interfaz', 'opt.lang.auto': 'Automático (del navegador)', 'opt.lang.pt': 'Português', 'opt.lang.en': 'English', 'opt.lang.es': 'Español',
+  'f.fontSize': 'Tamaño de fuente', 'f.lineHeight': 'Altura de línea', 'f.width': 'Ancho del texto', 'f.readingLine': 'Posición de la línea de lectura', 'f.fontFamily': 'Fuente', 'f.fontWeight': 'Peso', 'f.align': 'Alineación',
+  'f.colorText': 'Color del texto', 'f.colorBg': 'Color de fondo', 'f.colorAccent': 'Resalte y línea de lectura', 'f.colorCue': 'Color de las acotaciones',
+  'f.showReadingLine': 'Mostrar línea de lectura', 'f.fade': 'Desvanecer lejos de la línea', 'f.highlightWord': 'Marcar la palabra reconocida (voz)', 'f.showCues': 'Mostrar acotaciones [entre corchetes]', 'f.showHeadings': 'Mostrar títulos de sección', 'f.mirrorH': 'Espejo horizontal', 'f.mirrorV': 'Espejo vertical',
+  'opt.font.sans': 'Sans (sistema)', 'opt.font.rounded': 'Redondeada', 'opt.font.serif': 'Serif', 'opt.font.mono': 'Mono',
+  'opt.weight.400': 'Normal', 'opt.weight.500': 'Media', 'opt.weight.600': 'Seminegrita', 'opt.weight.700': 'Negrita', 'opt.align.left': 'Izquierda', 'opt.align.center': 'Centro',
+  'f.camera': 'Mostrar marcador de cámara', 'f.cameraStyle': 'Estilo', 'f.cameraX': 'Posición horizontal', 'f.cameraY': 'Posición vertical', 'f.cameraSize': 'Tamaño', 'f.cameraColor': 'Color',
+  'opt.cam.mira': 'Mira', 'opt.cam.anel': 'Anillo', 'opt.cam.ponto': 'Punto', 'cam.align': 'Línea de lectura a la altura de la cámara', 'cam.hint': 'El marcador muestra dónde está la lente detrás del cristal. Arrastra la mira en la vista previa o en el propio prompter para colocarla.',
+  'f.voiceLang': 'Idioma del habla', 'f.voiceSource': 'Micrófono en la ventana', 'opt.src.control': 'del control', 'opt.src.prompter': 'del prompter', 'f.voiceLookahead': 'Anticipación (palabras por delante del habla)', 'f.voiceJump': 'Confianza para saltos lejanos',
+  'opt.jump.low': 'baja', 'opt.jump.normal': 'normal', 'opt.jump.high': 'alta', 'opt.jump.vhigh': 'muy alta', 'f.voiceHybrid': 'Seguir avanzando despacio si se pierde la voz',
+  'voice.hint1': 'Con las dos ventanas abiertas, “Micrófono en la ventana” elige quién escucha. Si la ventana elegida no está abierta, la otra toma el micrófono por sí sola.',
+  'voice.hint2': 'El reconocimiento usa la Web Speech API del navegador (Chrome y Edge funcionan bien). La primera vez el navegador pide permiso para el micrófono.',
+  'pedal.hint1': 'En la app Stream Deck, configura cada pedal con la acción Hotkey (tecla de acceso rápido) usando las teclas de abajo. La ventana activa recibe la tecla. Haz clic en una tecla para grabar otra; F13–F15 evitan conflictos al escribir.',
+  'pedal.left': 'Pedal izquierdo', 'pedal.center': 'Pedal central', 'pedal.right': 'Pedal derecho', 'pedal.press': 'pulsa…', 'pedal.key.title': 'Haz clic y pulsa la tecla que enviará el Stream Deck',
+  'pedal.hid.connect': 'Conectar pedal por USB', 'pedal.hid.cal': 'Calibrar pedales', 'pedal.hid.status': 'WebHID · Chrome/Edge',
+  'pedal.hint2': 'Por USB el pedal habla directo con esta página, sin depender de la ventana activa, y mantenerlo pulsado repite la acción. Si no llega nada, cierra la app Stream Deck e inténtalo de nuevo.',
+  'act.toggle': 'Play / Pausa', 'act.play': 'Play', 'act.pause': 'Pausa', 'act.speedUp': 'Más rápido', 'act.speedDown': 'Más lento', 'act.prevBlock': 'Bloque anterior', 'act.nextBlock': 'Siguiente bloque',
+  'act.prevSection': 'Sección anterior (título)', 'act.nextSection': 'Siguiente sección (título)', 'act.nudgeBack': 'Retroceder media pantalla', 'act.nudgeFwd': 'Avanzar media pantalla', 'act.top': 'Volver al inicio', 'act.bottom': 'Ir al final',
+  'act.reset': 'Reiniciar (inicio + pausa)', 'act.voice': 'Activar / desactivar voz', 'act.blank': 'Ocultar / mostrar texto', 'act.fontUp': 'Fuente más grande', 'act.fontDown': 'Fuente más pequeña', 'act.mirrorH': 'Espejo horizontal', 'act.mirrorV': 'Espejo vertical', 'act.fullscreen': 'Pantalla completa (prompter)',
+  'key.space': 'Espacio', 'key.esc': 'Esc',
+  'vs.off': 'apagada', 'vs.paused': 'en pausa', 'vs.listening': 'escuchando', 'vs.synced': 'sincronizada', 'vs.searching': 'buscando tu posición', 'vs.denied': 'sin permiso de micrófono', 'vs.unsupported': 'navegador sin soporte (usa Chrome)',
+  'vs.network': 'error de red en el reconocimiento', 'vs.nomic': 'no se encontró micrófono', 'vs.unavailable': 'reconocimiento no disponible en este navegador', 'vs.waiting': 'esperando el micrófono', 'vs.word': 'palabra {n}', 'vs.remote': 'en el prompter',
+  'hud.noControl': 'sin panel de control', 'hud.hint': 'F pantalla completa · Espacio play · ← → bloques', 'hud.back': '← panel', 'hud.pedal': 'pedal USB', 'hud.voiceMode': 'voz',
+  'hud.listening': '🎤 escuchando', 'hud.synced': '🎤 sincronizado', 'hud.searching': '🎤 buscando…', 'hud.denied': '🎤 sin permiso', 'hud.unsupported': '🎤 sin soporte', 'hud.network': '🎤 error de red', 'hud.nomic': '🎤 sin micrófono', 'hud.unavailable': '🎤 no disponible', 'hud.waiting': '🎤 esperando micrófono',
+  'hid.unavailable': 'WebHID no está disponible en este navegador (usa Chrome o Edge).', 'hid.none': 'Ningún dispositivo seleccionado.', 'hid.connected': 'conectado: {name}', 'hid.default': 'dispositivo Elgato', 'hid.disconnected': 'pedal desconectado',
+  'hid.failed': 'no se pudo conectar: {err}', 'hid.handoff': 'el pedal pasó al panel de control', 'hid.calibrating': 'calibrando: pulsa el {pedal}', 'hid.calibrated': 'calibrado: bytes {bytes}', 'hid.report': 'informe HID: ',
+  'popup.blocked': 'El navegador bloqueó la ventana nueva. Permite las ventanas emergentes para esta página e inténtalo de nuevo.', 'empty.script': 'Sin guion. Pega un texto en el panel de control.', 'empty.edit': 'Sin guion.',
+  'title.control': 'Teleprompter · Control', 'title.prompter': 'Teleprompter · Prompter', 'sample.failed': 'No se pudo cargar el guion de ejemplo.',
+}
+};
+const VOICE_LANG_FOR = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
+function detectLang() {
+  const tags = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']).map(x => String(x).toLowerCase());
+  for (const tg of tags) { if (tg.startsWith('pt')) return 'pt'; if (tg.startsWith('es')) return 'es'; if (tg.startsWith('en')) return 'en'; }
+  const first = tags[0] || 'en';
+  return first.startsWith('pt') ? 'pt' : first.startsWith('es') ? 'es' : 'en';
+}
+const LANG = (state.uiLang && I18N[state.uiLang]) ? state.uiLang : detectLang();
+document.documentElement.lang = { pt: 'pt-BR', en: 'en', es: 'es' }[LANG];
+function t(key, vars) {
+  let s = (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || I18N.pt[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+/* aplica o dicionário aos elementos marcados com data-i18n (texto), data-i18n-html, data-i18n-title e data-i18n-placeholder */
+function applyI18n(root) {
+  $$('[data-i18n]', root).forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $$('[data-i18n-html]', root).forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  $$('[data-i18n-title]', root).forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  $$('[data-i18n-placeholder]', root).forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+}
+/* roteiro de exemplo: arquivo separado por idioma; se não der para buscar (file://), usa a cópia embutida */
+async function loadSample(lang) {
+  lang = SAMPLES[lang] ? lang : 'en';
+  if (location.protocol !== 'file:') {
+    try {
+      const r = await fetch('scripts/roteiro.' + lang + '.md', { cache: 'no-cache' });
+      if (r.ok) { const txt = await r.text(); if (txt.trim().startsWith('#')) return txt; }
+    } catch (e) {}
+  }
+  return SAMPLES[lang];
+}
