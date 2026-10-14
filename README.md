@@ -1,5 +1,7 @@
 # Teleprompter no navegador
 
+🇺🇸 [English](README.en.md) · 🇪🇸 [Español](README.es.md)
+
 Um único arquivo (`index.html`) com duas telas:
 
 - **Painel de controle** (`index.html` ou `index.html#control`), com duas telas: **Controle** (monitor com o espelho do prompter, play/pause, modo de rolagem, velocidade ou voz, progresso) e **Roteiro** (editor Markdown com prévia de como o texto aparece). A engrenagem **⚙** abre os ajustes de texto, câmera, voz, pedal e teclas ao lado do monitor, que muda na hora.
@@ -47,6 +49,7 @@ Escolha **Seguir minha voz** e dê play. O navegador pede acesso ao microfone na
 - As últimas palavras reconhecidas são alinhadas com o roteiro de forma tolerante (aceita erros de reconhecimento, palavras trocadas e "é", "né", "então").
 - Se você pular um trecho, o texto procura a nova posição e vai até lá. Se você voltar, ele volta.
 - Se você improvisar, o texto espera. Quando voltar ao roteiro, ele reencontra o ponto sozinho (primeiro perto de onde estava; depois no roteiro inteiro, se tiver uma frase bem reconhecida).
+- A palavra reconhecida fica marcada no prompter e na prévia; escolha o estilo em ⚙ → Texto → Estilo da marcação (fundo, sublinhado ou cor do texto), ou desligue a marcação.
 - **Antecipação** (⚙ → *Voz*) é quantas palavras à frente da fala a linha de leitura fica.
 - **Confiança para pular longe** deixa os pulos grandes mais exigentes ou mais soltos.
 - **Continuar rolando devagar se perder a voz** usa a velocidade da rolagem automática enquanto não reconhece nada.

@@ -112,12 +112,13 @@ function applyVars(stage, s, scale) {
   st.setProperty('--p-rl', s.readingLine + '%');
   st.setProperty('--p-text', s.colorText); st.setProperty('--p-bg', s.colorBg);
   st.setProperty('--p-accent', s.colorAccent); st.setProperty('--p-cue', s.colorCue);
-  st.setProperty('--p-hl', hexToRgba(s.colorAccent, .3));
+  st.setProperty('--p-hl', hexToRgba(s.colorAccent, .5));
   st.setProperty('--p-cx', s.cameraX + '%'); st.setProperty('--p-cy', s.cameraY + '%'); st.setProperty('--p-cs', (s.cameraSize * scale).toFixed(1) + 'px'); st.setProperty('--p-cam', s.cameraColor);
   const cl = stage.classList;
   cl.toggle('mirror-h', !!s.mirrorH); cl.toggle('mirror-v', !!s.mirrorV); cl.toggle('nocues', !s.showCues); cl.toggle('noheads', !s.showHeadings);
   cl.toggle('noline', !s.showReadingLine); cl.toggle('fade', !!s.fade); cl.toggle('blank', !!s.blank); cl.toggle('hlword', !!s.highlightWord);
   cl.toggle('cam-on', !!s.camera); cl.toggle('cam-anel', s.cameraStyle === 'anel'); cl.toggle('cam-ponto', s.cameraStyle === 'ponto');
+  cl.toggle('hl-sublinhado', s.highlightStyle === 'sublinhado'); cl.toggle('hl-cor', s.highlightStyle === 'cor');
 }
 /* arrastar a mira da câmera dentro de um palco (prévia ou prompter) */
 function enableCamDrag(stage) {
